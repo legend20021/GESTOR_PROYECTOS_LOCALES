@@ -145,7 +145,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const STORAGE_KEY = 'dynamic_dashboard_data_v10';
+        const STORAGE_KEY = 'dynamic_dashboard_data_v11';
         const TIMEZONE_KEY = 'dashboard_timezone';
         const grid = document.getElementById('task-grid-container');
         const mainTitle = document.getElementById('main-title');
@@ -161,7 +161,6 @@
             projectData = savedData ? JSON.parse(savedData) : { title: 'Nuevo Proyecto', cards: [] };
         }
 
-        // --- NUEVA FUNCIÓN: Organizar tarjetas ---
         function isCardCompleted(card) {
             return card.tasks.length > 0 && card.tasks.every(task => task.completed);
         }
@@ -171,7 +170,7 @@
                 const aCompleted = isCardCompleted(a);
                 const bCompleted = isCardCompleted(b);
                 if (aCompleted === bCompleted) return 0;
-                return aCompleted ? 1 : -1; // Mueve las completadas (true) al final
+                return aCompleted ? 1 : -1;
             });
         }
 
@@ -225,7 +224,6 @@
             });
             updateAllUI();
             updateSilenceButtonVisibility();
-            setupEventListeners();
             document.getElementById('add-card-fab').classList.toggle('pulse-animation', projectData.cards.length === 0);
         }
 
@@ -440,9 +438,11 @@
         function applyTheme(theme) { document.body.classList.toggle('light-mode', theme === 'light'); themeToggle.querySelector('.toggle-circle').innerHTML = theme === 'light' ? '☀️' : '🌙'; }
         themeToggle.addEventListener('click', () => { const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light'; localStorage.setItem('dynamic_dashboard_theme_v3', newTheme); applyTheme(newTheme); });
 
+        // --- INICIALIZACIÓN ---
         loadState();
-        sortCards(); // Organiza las tarjetas al cargar la página
+        sortCards();
         render();
+        setupEventListeners(); // Se llama una sola vez para configurar todos los listeners.
         applyTheme(localStorage.getItem('dynamic_dashboard_theme_v3') || 'dark');
     });
     </script>
