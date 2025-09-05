@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas Dinámico</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        :root {
+            --color-bg: #1a1a2e; --color-bg-light: #16213e; --color-card: #0f3460;
+            --color-primary: #53bf9d; --color-secondary: #e94560; --color-text: #e3e3e3;
+            --color-text-muted: #a4b1cd; --border-color: #1f3a69; --border-radius: 12px;
+            --shadow: 0 10px 20px rgba(0,0,0,0.2); --color-status-work: #f39c12; --color-status-pending: #6c757d;
+        }
+        body.light-mode {
+            --color-bg: #f0f2f5; --color-bg-light: #ffffff; --color-card: #ffffff;
+            --color-primary: #28a745; --color-secondary: #dc3545; --color-text: #050505;
+            --color-text-muted: #65676b; --border-color: #e4e6eb;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1); --color-status-work: #007bff; --color-status-pending: #6c757d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--color-bg); color: var(--color-text);
+            padding: 2rem; line-height: 1.6; transition: background-color 0.3s ease, color 0.3s ease;
+            padding-bottom: 80px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header {
+            background-color: var(--color-bg-light); padding: 1.5rem 2rem; border-radius: var(--border-radius);
+            margin-bottom: 2rem; box-shadow: var(--shadow); display: flex; flex-direction: column;
+            align-items: center; position: relative; transition: background-color 0.3s ease;
+        }
+        header img.logo { max-width: 220px; margin-bottom: 1rem; }
+        header h1 { 
+            font-size: 2.2rem; margin-bottom: 1rem; color: var(--color-text); text-align: center; 
+            transition: color 0.3s ease; cursor: pointer; padding: 5px; border-radius: 5px;
+        }
+        header h1:hover { background-color: rgba(255,255,255,0.1); }
+        [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: var(--color-bg); }
+
+        #project-info { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 0.5rem; flex-wrap: wrap; gap: 10px; }
+        #project-status { padding: 5px 15px; border-radius: 20px; font-weight: 600; background-color: var(--color-status-work); color: white; transition: background-color 0.3s ease; }
+        #project-status.completed { background-color: var(--color-primary); }
+        #progress-text { font-weight: 600; color: var(--color-text-muted); transition: color 0.3s ease; }
+        #project-progress-container { width: 100%; background-color: var(--color-bg); border-radius: 20px; padding: 4px; transition: background-color 0.3s ease; margin-top: 1rem; }
+        #project-progress-bar { height: 20px; width: 0%; background: linear-gradient(90deg, var(--color-secondary), var(--color-primary)); border-radius: 16px; transition: width 0.5s ease-in-out; }
+        
+        #theme-toggle { position: absolute; top: 20px; right: 20px; width: 50px; height: 26px; background-color: var(--color-bg); border-radius: 13px; cursor: pointer; display: flex; align-items: center; padding: 3px; transition: background-color 0.3s ease; }
+        #theme-toggle .toggle-circle { width: 20px; height: 20px; background-color: white; border-radius: 50%; transition: transform 0.3s ease; display: flex; justify-content: center; align-items: center; font-size: 14px; }
+        body.light-mode #theme-toggle .toggle-circle { transform: translateX(24px); }
+        
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
+        .task-card { 
+            background-color: var(--color-card); border-radius: var(--border-radius); padding: 1.5rem; 
+            box-shadow: var(--shadow); transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            display: flex; flex-direction: column;
+        }
+        .task-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        .task-card-header h2 { 
+            color: var(--color-primary); margin: 0; border: none; padding: 5px; font-size: 1.5rem;
+            flex-grow: 1; cursor: pointer; border-radius: 5px;
+        }
+        .task-card-header h2:hover { background-color: rgba(255,255,255,0.1); }
+        .card-actions { display: flex; align-items: center; gap: 10px; }
+        .card-status { font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; color: white; white-space: nowrap; }
+        .card-status.pending { background-color: var(--color-status-pending); }
+        .card-status.in-progress { background-color: var(--color-status-work); }
+        .card-status.completed { background-color: var(--color-primary); }
+        .delete-card-btn { background: none; border: none; color: var(--color-secondary); cursor: pointer; font-size: 1.2rem; padding: 5px; line-height: 1; }
+        .delete-card-btn:hover { color: red; }
+        .card-progress { font-size: 0.9rem; color: var(--color-text-muted); font-weight: 300; margin-bottom: 1rem; }
+        
+        .task-list { list-style: none; flex-grow: 1; }
+        .task-item { padding: 0.5rem; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s ease, border-color 0.3s ease; }
+        .task-item:last-child { border-bottom: none; }
+        .task-main { display: flex; align-items: center; }
+        .task-item input[type="checkbox"] { appearance: none; -webkit-appearance: none; height: 20px; width: 20px; min-width: 20px; background-color: var(--color-bg); border: 2px solid var(--color-text-muted); border-radius: 5px; cursor: pointer; margin-right: 1rem; position: relative; transition: all 0.2s ease; }
+        .task-item input[type="checkbox"]:checked { background-color: var(--color-primary); border-color: var(--color-primary); }
+        .task-item input[type="checkbox"]:checked::after { content: '✔'; position: absolute; color: white; font-size: 14px; font-weight: bold; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .task-item label { 
+            font-size: 1rem; color: var(--color-text); transition: color 0.3s ease, text-decoration 0.3s ease; 
+            cursor: pointer; flex-grow: 1; padding: 5px; border-radius: 5px;
+        }
+        .task-item label:hover { background-color: rgba(255,255,255,0.05); }
+        .task-item.completed label { text-decoration: line-through; color: var(--color-text-muted); }
+        .task-actions { display: flex; align-items: center; }
+        .details-toggle { font-size: 1.5rem; cursor: pointer; padding: 0 0.5rem; color: var(--color-text-muted); transition: transform 0.3s ease, color 0.2s ease; }
+        .details-toggle.open { transform: rotate(180deg); }
+        .details-toggle:hover, .delete-task-btn:hover { color: var(--color-text); }
+        .delete-task-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 5px; }
+        
+        .task-details { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease; padding: 0 1rem; margin-left: calc(20px + 1rem); border-left: 2px solid var(--color-primary); }
+        .task-details.open { max-height: 300px; padding: 0.75rem 1rem; }
+        .task-details p { 
+            font-size: 0.9rem; color: var(--color-text-muted); transition: color 0.3s ease; 
+            padding: 5px; border-radius: 5px; cursor: pointer;
+        }
+        .task-details p:hover { background-color: rgba(255,255,255,0.05); }
+
+        .add-task-form { display: flex; margin-top: 1rem; gap: 10px; }
+        .add-task-input { flex-grow: 1; padding: 0.5rem; border-radius: 5px; border: 1px solid var(--border-color); background-color: var(--color-bg); color: var(--color-text); }
+        .add-task-btn { padding: 0.5rem 1rem; border: none; background-color: var(--color-primary); color: white; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        
+        #add-card-fab {
+            position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
+            background-color: var(--color-primary); color: white; border-radius: 50%;
+            border: none; font-size: 2.5rem; line-height: 1; text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        #add-card-fab:hover { transform: scale(1.1); background-color: #63d4b0; }
+
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 0.75rem; text-align: center; font-size: 0.9rem; background-color: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #f0f0f0; z-index: 10; }
+        footer p { display: flex; justify-content: center; align-items: center; gap: 8px; } footer a { color: #ffffff; font-weight: 600; text-decoration: none; } footer a:hover { text-decoration: underline; }
+        footer svg { fill: #ffffff; width: 24px; height: 24px; }
+        
+        @media (max-width: 900px) { .task-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { body { padding: 1rem; padding-bottom: 80px; } header h1 { font-size: 1.8rem; } #theme-toggle { top: 15px; right: 15px; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="https://penagos.com/wp-content/uploads/2020/04/logo-2.png" alt="Logo Penagos" class="logo">
+            <h1 id="main-title" contenteditable="true">Dashboard de Mejoras: Horno HSG-9</h1>
+            <div id="theme-toggle"><div class="toggle-circle"></div></div>
+            <div id="project-progress-container"><div id="project-progress-bar"></div></div>
+            <div id="project-info">
+                <div id="project-status"></div>
+                <div id="progress-text"></div>
+            </div>
+        </header>
+
+        <main class="task-grid" id="task-grid-container">
+            </main>
+    </div>
+    
+    <button id="add-card-fab" title="Añadir nueva tarjeta">+</button>
+
+    <footer>
+        <p>
+            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            Desarrollado por <a href="https://github.com/legend20021" target="_blank" rel="noopener noreferrer">legend20021</a>
+        </p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const STORAGE_KEY = 'dynamic_dashboard_data';
+        const grid = document.getElementById('task-grid-container');
+        const mainTitle = document.getElementById('main-title');
+
+        // --- MODELO DE DATOS ---
+        let projectData = {
+            title: 'Dashboard de Mejoras: Horno HSG-9',
+            cards: []
+        };
+
+        const defaultData = {
+            title: 'Dashboard de Mejoras: Horno HSG-9',
+            cards: [
+                { id: `card-${Date.now()}-1`, title: '🔥 Eficiencia y Calor', emoji: '🔥', tasks: [
+                    { id: `task-${Date.now()}-1`, text: 'Extender y aletear más la chimenea', details: 'El aire de la chimenea sale muy caliente. Incluir 1 sección de 1m de chimenea en el suministro.', completed: false },
+                    { id: `task-${Date.now()}-2`, text: 'Ampliar diámetro del ducto de aire superior', details: 'Se busca que todo el aire de proceso entre por esta vía para robar todo el calor y anular los agujeros de "Oscar".', completed: false },
+                    { id: `task-${Date.now()}-3`, text: 'Instalar deflector en filtro ciclónico', details: 'Actualmente se miden 250-280°C en el ciclón. El deflector (ya diseñado) tomará más energía de este calor residual.', completed: false }
+                ]},
+                { id: `card-${Date.now()}-2`, title: '⚙️ Combustión y Cenizas', emoji: '⚙️', tasks: [
+                    { id: `task-${Date.now()}-4`, text: 'Fabricar parrilla en HIERRO FUNDIDO', details: '"Se debe fundir la hornilla" para garantizar máxima durabilidad frente a altas temperaturas y choques térmicos.', completed: true },
+                    { id: `task-${Date.now()}-5`, text: 'Compuertas de 1/4" o 3/16" reforzadas', details: 'Deben ser "estrictamente gruesas" para que no se flecten. Reforzar con una lata interna para un mejor sello.', completed: false }
+                ]}
+            ]
+        };
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(projectData));
+        }
+
+        function loadState() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                projectData = JSON.parse(savedData);
+            } else {
+                projectData = JSON.parse(JSON.stringify(defaultData)); // Deep copy to avoid reference issues
+            }
+        }
+
+        // --- RENDERIZACIÓN DE LA UI ---
+        function render() {
+            grid.innerHTML = '';
+            mainTitle.textContent = projectData.title;
+
+            if (projectData.cards.length === 0) {
+                 grid.innerHTML = '<p style="color: var(--color-text-muted); grid-column: 1 / -1; text-align: center;">Aún no hay tarjetas. ¡Añade una para empezar!</p>';
+            }
+
+            projectData.cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'task-card';
+                cardElement.dataset.cardId = card.id;
+
+                const tasksHtml = card.tasks.map(task => `
+                    <li class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+                        <div class="task-main">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''}>
+                            <label contenteditable="true">${task.text}</label>
+                            <div class="task-actions">
+                                <span class="details-toggle">▾</span>
+                                <button class="delete-task-btn" title="Eliminar tarea">×</button>
+                            </div>
+                        </div>
+                        <div class="task-details">
+                            <p contenteditable="true"><strong>Justificación:</strong> ${task.details}</p>
+                        </div>
+                    </li>
+                `).join('');
+
+                cardElement.innerHTML = `
+                    <div class="task-card-header">
+                        <h2 contenteditable="true">${card.emoji} ${card.title}</h2>
+                        <div class="card-actions">
+                            <span class="card-status"></span>
+                            <button class="delete-card-btn" title="Eliminar tarjeta">🗑️</button>
+                        </div>
+                    </div>
+                    <p class="card-progress"></p>
+                    <ul class="task-list">${tasksHtml}</ul>
+                    <form class="add-task-form">
+                        <input type="text" class="add-task-input" placeholder="Nueva tarea..." required>
+                        <button type="submit" class="add-task-btn">Añadir</button>
+                    </form>
+                `;
+                grid.appendChild(cardElement);
+            });
+            
+            updateAllUI();
+            setupEventListeners();
+        }
+
+        function updateAllUI() {
+            let totalTasks = 0;
+            let completedTasks = 0;
+
+            projectData.cards.forEach(card => {
+                totalTasks += card.tasks.length;
+                completedTasks += card.tasks.filter(t => t.completed).length;
+            });
+            
+            const progressBar = document.getElementById('project-progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const globalStatusBox = document.getElementById('project-status');
+
+            const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            progressBar.style.width = progressPercentage + '%';
+            progressText.textContent = `Progreso: ${Math.round(progressPercentage)}% (${completedTasks} de ${totalTasks})`;
+
+            if (progressPercentage === 100 && totalTasks > 0) {
+                globalStatusBox.textContent = '✅ Finalizado';
+                globalStatusBox.classList.add('completed');
+            } else {
+                globalStatusBox.textContent = '🚧 Trabajando';
+                globalStatusBox.classList.remove('completed');
+            }
+
+            document.querySelectorAll('.task-card').forEach(cardElement => {
+                const cardId = cardElement.dataset.cardId;
+                const cardData = projectData.cards.find(c => c.id === cardId);
+                if (!cardData) return;
+
+                const completedInCard = cardData.tasks.filter(t => t.completed).length;
+                const totalInCard = cardData.tasks.length;
+                
+                const cardProgressEl = cardElement.querySelector('.card-progress');
+                const cardStatusEl = cardElement.querySelector('.card-status');
+                
+                cardProgressEl.textContent = `${completedInCard} de ${totalInCard} tareas completadas`;
+                cardStatusEl.className = 'card-status'; // Reset classes
+                if (totalInCard === 0 || completedInCard === 0) {
+                    cardStatusEl.textContent = 'Pendiente';
+                    cardStatusEl.classList.add('pending');
+                } else if (completedInCard < totalInCard) {
+                    cardStatusEl.textContent = 'En Progreso';
+                    cardStatusEl.classList.add('in-progress');
+                } else {
+                    cardStatusEl.textContent = '✅ Finalizado';
+                    cardStatusEl.classList.add('completed');
+                }
+            });
+        }
+        
+        // --- MANEJO DE EVENTOS ---
+        function setupEventListeners() {
+            // Edición de títulos y texto con contenteditable
+            mainTitle.addEventListener('blur', () => {
+                projectData.title = mainTitle.textContent;
+                saveState();
+            });
+
+            grid.querySelectorAll('[contenteditable="true"]').forEach(element => {
+                element.addEventListener('blur', (e) => {
+                    const cardElement = e.target.closest('.task-card');
+                    const cardId = cardElement.dataset.cardId;
+                    const card = projectData.cards.find(c => c.id === cardId);
+
+                    if (e.target.tagName === 'H2') {
+                        const newTitle = e.target.textContent;
+                        const emojiMatch = newTitle.match(/^(\p{Emoji})/u);
+                        card.emoji = emojiMatch ? emojiMatch[1] : '📄';
+                        card.title = newTitle.replace(/^(\p{Emoji}\s*)/u, '').trim();
+                        saveState();
+                        render(); // Re-render para asegurar consistencia
+                    } else {
+                        const taskElement = e.target.closest('.task-item');
+                        const taskId = taskElement.dataset.taskId;
+                        const task = card.tasks.find(t => t.id === taskId);
+                        
+                        if (e.target.tagName === 'LABEL') {
+                            task.text = e.target.textContent;
+                        } else if (e.target.tagName === 'P') {
+                            task.details = e.target.textContent.replace('Justificación: ', '');
+                        }
+                        saveState();
+                    }
+                });
+            });
+
+            // Resto de eventos usando delegación
+            grid.addEventListener('click', (e) => {
+                const cardElement = e.target.closest('.task-card');
+                if (!cardElement) return;
+                const cardId = cardElement.dataset.cardId;
+                const card = projectData.cards.find(c => c.id === cardId);
+
+                // Eliminar tarjeta
+                if (e.target.closest('.delete-card-btn')) {
+                    if (confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${card.title}"?`)) {
+                        projectData.cards = projectData.cards.filter(c => c.id !== cardId);
+                        saveState();
+                        render();
+                    }
+                }
+                
+                // Eliminar tarea
+                if (e.target.closest('.delete-task-btn')) {
+                    const taskElement = e.target.closest('.task-item');
+                    const taskId = taskElement.dataset.taskId;
+                    card.tasks = card.tasks.filter(t => t.id !== taskId);
+                    saveState();
+                    render();
+                }
+
+                // Desplegar detalles
+                if (e.target.closest('.details-toggle')) {
+                    const toggle = e.target.closest('.details-toggle');
+                    toggle.classList.toggle('open');
+                    toggle.closest('.task-main').nextElementSibling.classList.toggle('open');
+                }
+            });
+
+            grid.addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox') {
+                    const taskElement = e.target.closest('.task-item');
+                    const cardElement = e.target.closest('.task-card');
+                    const cardId = cardElement.dataset.cardId;
+                    const taskId = taskElement.dataset.taskId;
+                    
+                    const card = projectData.cards.find(c => c.id === cardId);
+                    const task = card.tasks.find(t => t.id === taskId);
+
+                    task.completed = e.target.checked;
+                    taskElement.classList.toggle('completed', e.target.checked);
+                    
+                    saveState();
+                    updateAllUI();
+                }
+            });
+
+            grid.addEventListener('submit', (e) => {
+                if (e.target.classList.contains('add-task-form')) {
+                    e.preventDefault();
+                    const cardElement = e.target.closest('.task-card');
+                    const cardId = cardElement.dataset.cardId;
+                    const card = projectData.cards.find(c => c.id === cardId);
+                    const input = e.target.querySelector('.add-task-input');
+                    const text = input.value.trim();
+
+                    if (text) {
+                        card.tasks.push({
+                            id: `task-${Date.now()}`,
+                            text: text,
+                            details: 'Añade una justificación aquí.',
+                            completed: false
+                        });
+                        input.value = '';
+                        saveState();
+                        render();
+                    }
+                }
+            });
+        }
+        
+        // Añadir nueva tarjeta
+        document.getElementById('add-card-fab').addEventListener('click', () => {
+            const newTitle = prompt('Introduce el título para la nueva tarjeta:', 'Nuevo Proyecto');
+            if (newTitle && newTitle.trim() !== '') {
+                projectData.cards.push({
+                    id: `card-${Date.now()}`,
+                    title: newTitle.trim(),
+                    emoji: '🚀',
+                    tasks: []
+                });
+                saveState();
+                render();
+            }
+        });
+
+        // --- GESTIÓN DEL TEMA (MODO CLARO/OSCURO) ---
+        const themeToggle = document.getElementById('theme-toggle');
+        function applyTheme(theme) {
+            document.body.classList.toggle('light-mode', theme === 'light');
+            themeToggle.querySelector('.toggle-circle').innerHTML = theme === 'light' ? '☀️' : '🌙';
+        }
+        themeToggle.addEventListener('click', () => {
+            const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+            localStorage.setItem('dynamic_dashboard_theme', newTheme);
+            applyTheme(newTheme);
+        });
+
+        // --- INICIALIZACIÓN ---
+        loadState();
+        render();
+        applyTheme(localStorage.getItem('dynamic_dashboard_theme') || 'dark');
+    });
+    </script>
+</body>
+</html>
