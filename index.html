@@ -83,13 +83,34 @@
         .alarm-display { font-size: 0.8rem; color: var(--color-primary); font-weight: 600; margin-left: 5px; min-width: 150px; }
         .alarm-input { background-color: var(--color-bg); color: var(--color-text); border: 1px solid var(--border-color); border-radius: 4px; }
         @keyframes ringing { 0%, 100% { box-shadow: 0 0 10px 3px rgba(233, 69, 96, 0); } 50% { box-shadow: 0 0 10px 3px rgba(233, 69, 96, 0.7); } }
-        .task-item.is-ringing { border-radius: 8px; animation: ringing 1s infinite; cursor: pointer; }
+        .task-item.is-ringing { border-radius: 8px; animation: ringing 1s infinite; }
         .add-task-form { display: flex; margin-top: 1rem; gap: 10px; }
         .add-task-input { flex-grow: 1; padding: 0.5rem; border-radius: 5px; border: 1px solid var(--border-color); background-color: var(--color-bg); color: var(--color-text); }
         .add-task-btn { padding: 0.5rem 1rem; border: none; background-color: var(--color-primary); color: white; border-radius: 5px; cursor: pointer; font-weight: 600; }
         #add-card-fab { position: fixed; bottom: 85px; right: 25px; width: 60px; height: 60px; background-color: var(--color-primary); color: white; border-radius: 50%; border: none; font-size: 2.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.2s ease, background-color 0.2s ease; z-index: 100; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .pulse-animation { animation: pulse 2s infinite; }
+        
+        /* --- NUEVO BOTÓN DE SILENCIO --- */
+        #silence-all-btn {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            bottom: 155px; /* Encima del botón de agregar */
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--color-secondary);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.2s ease;
+        }
+        #silence-all-btn:hover { transform: scale(1.1); }
+
         footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 0.75rem; text-align: center; font-size: 0.9rem; background-color: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); z-index: 10; color: #f0f0f0; }
         
         @media (max-width: 768px) { 
@@ -137,6 +158,7 @@
     </div>
     
     <button id="add-card-fab" title="Añadir nueva tarjeta">+</button>
+    <button id="silence-all-btn" title="Silenciar todas las alarmas">🔇</button>
 
     <footer>
         <p>Desarrollado con IA y la guía de legend20021</p>
@@ -144,10 +166,11 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const STORAGE_KEY = 'dynamic_dashboard_data_v4';
+        const STORAGE_KEY = 'dynamic_dashboard_data_v5';
         const TIMEZONE_KEY = 'dashboard_timezone';
         const grid = document.getElementById('task-grid-container');
         const mainTitle = document.getElementById('main-title');
+        const silenceBtn = document.getElementById('silence-all-btn');
         const alarmSound = new Audio('data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATEFGAAACAAAFbGF2YzU4LjkxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7UMQAAAoAAAHAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
         let projectData = { title: 'Dashboard de Mejoras', cards: [] };
 
@@ -170,9 +193,8 @@
                 cardElement.className = 'task-card';
                 cardElement.dataset.cardId = card.id;
 
-                const tasksHtml = card.tasks.map(task => {
-                    return `
-                    <li class="task-item ${task.completed ? 'completed' : ''} ${task.alarmTriggered ? 'is-ringing' : ''}" data-task-id="${task.id}" title="${task.alarmTriggered ? '¡Alarma sonando! Haz clic para descartar.' : ''}">
+                const tasksHtml = card.tasks.map(task => `
+                    <li class="task-item ${task.completed ? 'completed' : ''} ${task.alarmTriggered ? 'is-ringing' : ''}" data-task-id="${task.id}">
                         <div class="task-main">
                             <input type="checkbox" ${task.completed ? 'checked' : ''}>
                             <label contenteditable="true">${task.text}</label>
@@ -191,7 +213,7 @@
                             </div>
                         </div>
                     </li>
-                `}).join('');
+                `).join('');
 
                 cardElement.innerHTML = `
                     <div class="task-card-header">
@@ -212,80 +234,18 @@
             });
             
             updateAllUI();
+            updateSilenceButtonVisibility();
             setupEventListeners();
             
-            const fab = document.getElementById('add-card-fab');
-            fab.classList.toggle('pulse-animation', projectData.cards.length === 0);
+            document.getElementById('add-card-fab').classList.toggle('pulse-animation', projectData.cards.length === 0);
         }
 
         function updateAllUI() {
-            let totalTasks = 0;
-            let completedTasks = 0;
-            projectData.cards.forEach(card => {
-                totalTasks += card.tasks.length;
-                completedTasks += card.tasks.filter(t => t.completed).length;
-            });
-            
-            const progressBar = document.getElementById('project-progress-bar');
-            const progressText = document.getElementById('progress-text');
-            const globalStatusBox = document.getElementById('project-status');
-            const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-            progressBar.style.width = progressPercentage + '%';
-            progressText.textContent = `Progreso: ${Math.round(progressPercentage)}% (${completedTasks} de ${totalTasks})`;
-            globalStatusBox.className = 'project-status';
-            if (progressPercentage === 100 && totalTasks > 0) {
-                globalStatusBox.textContent = '✅ Finalizado';
-                globalStatusBox.classList.add('completed');
-            } else { globalStatusBox.textContent = '🚧 Trabajando'; }
-
-            document.querySelectorAll('.task-card').forEach(cardElement => {
-                const cardId = cardElement.dataset.cardId;
-                const cardData = projectData.cards.find(c => c.id === cardId);
-                if (!cardData) return;
-                const completedInCard = cardData.tasks.filter(t => t.completed).length;
-                const totalInCard = cardData.tasks.length;
-                const cardProgressEl = cardElement.querySelector('.card-progress');
-                const cardStatusEl = cardElement.querySelector('.card-status');
-                cardProgressEl.textContent = `${completedInCard} de ${totalInCard} tareas completadas`;
-                cardStatusEl.className = 'card-status';
-                if (totalInCard === 0 || completedInCard === 0) {
-                    cardStatusEl.textContent = 'Pendiente';
-                    cardStatusEl.classList.add('pending');
-                } else if (completedInCard < totalInCard) {
-                    cardStatusEl.textContent = 'En Progreso';
-                    cardStatusEl.classList.add('in-progress');
-                } else {
-                    cardStatusEl.textContent = '✅ Finalizado';
-                    cardStatusEl.classList.add('completed');
-                }
-            });
+            // ... (Función sin cambios)
         }
         
         function setupEventListeners() {
             mainTitle.addEventListener('blur', () => { projectData.title = mainTitle.textContent; saveState(); });
-
-            grid.addEventListener('blur', (e) => {
-                if(e.target.hasAttribute('contenteditable')) {
-                    const cardElement = e.target.closest('.task-card');
-                    const cardId = cardElement.dataset.cardId;
-                    const card = projectData.cards.find(c => c.id === cardId);
-                    if (e.target.tagName === 'H2') {
-                        const newTitle = e.target.textContent;
-                        const emojiMatch = newTitle.match(/^(\p{Emoji})/u);
-                        card.emoji = emojiMatch ? emojiMatch[1] : '📄';
-                        card.title = newTitle.replace(/^(\p{Emoji}\s*)/u, '').trim();
-                        saveState();
-                        render();
-                    } else {
-                        const taskElement = e.target.closest('.task-item');
-                        const taskId = taskElement.dataset.taskId;
-                        const task = card.tasks.find(t => t.id === taskId);
-                        if (e.target.tagName === 'LABEL') { task.text = e.target.textContent; } 
-                        else if (e.target.tagName === 'P') { task.details = e.target.textContent.replace('Justificación: ', '').trim(); }
-                        saveState();
-                    }
-                }
-            }, true);
 
             grid.addEventListener('click', (e) => {
                 const target = e.target;
@@ -296,20 +256,8 @@
                 const card = projectData.cards.find(c => c.id === cardId);
                 const taskItem = target.closest('.task-item');
 
-                if (taskItem && taskItem.classList.contains('is-ringing')) {
-                    if(confirm(`Descartar alarma para la tarea:\n"${taskItem.querySelector('label').textContent}"`)) {
-                        const task = card.tasks.find(t => t.id === taskItem.dataset.taskId);
-                        task.alarmTriggered = false;
-                        task.alarm = null;
-                        alarmSound.pause(); alarmSound.currentTime = 0;
-                        saveState();
-                        render();
-                    }
-                    return;
-                }
-
                 const toggle = target.closest('.details-toggle');
-                if (toggle) {
+                if (toggle && taskItem) {
                     const taskMain = toggle.closest('.task-main');
                     const detailsWrapper = taskMain.nextElementSibling;
                     if (detailsWrapper && detailsWrapper.classList.contains('task-details-wrapper')) {
@@ -319,18 +267,12 @@
                     return;
                 }
                 
-                if (target.closest('.delete-card-btn')) {
-                    if (confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${card.title}"?`)) {
-                        projectData.cards = projectData.cards.filter(c => c.id !== cardId);
-                        saveState();
-                        render();
+                if (target.closest('.set-alarm-btn')) {
+                    // Prepara el audio para que el navegador lo permita sonar más tarde
+                    if (alarmSound.paused) {
+                        alarmSound.play().catch(() => {});
+                        alarmSound.pause();
                     }
-                } else if (target.closest('.delete-task-btn')) {
-                    const taskId = taskItem.dataset.taskId;
-                    card.tasks = card.tasks.filter(t => t.id !== taskId);
-                    saveState();
-                    render();
-                } else if (target.closest('.set-alarm-btn')) {
                     const input = taskItem.querySelector('.alarm-input');
                     input.style.display = 'inline-block';
                     input.focus();
@@ -341,85 +283,22 @@
                     saveState();
                     render();
                 }
+                 // ... (Resto de los listeners de click como borrar tarjeta/tarea)
             });
 
-            grid.addEventListener('change', (e) => {
-                const target = e.target;
-                if (target.type === 'checkbox') {
-                    const taskItem = target.closest('.task-item');
-                    const card = projectData.cards.find(c => c.id === target.closest('.task-card').dataset.cardId);
-                    const task = card.tasks.find(t => t.id === taskItem.dataset.taskId);
-                    task.completed = target.checked;
-                    saveState();
-                    render();
-                } else if (target.classList.contains('alarm-input')) {
-                    const card = projectData.cards.find(c => c.id === target.closest('.task-card').dataset.cardId);
-                    const task = card.tasks.find(t => t.id === target.closest('.task-item').dataset.taskId);
-                    const timeString = target.value;
-                    if (timeString) {
-                        const today = new Date();
-                        const [hours, minutes] = timeString.split(':');
-                        today.setHours(hours, minutes, 0, 0);
-                        if (today < new Date()) { today.setDate(today.getDate() + 1); }
-                        task.alarm = today.toISOString();
-                        task.alarmTriggered = false;
-                    }
-                    target.style.display = 'none';
-                    saveState();
-                    render();
-                }
-            });
-
-            grid.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (e.target.classList.contains('add-task-form')) {
-                    const cardElement = e.target.closest('.task-card');
-                    const card = projectData.cards.find(c => c.id === cardElement.dataset.cardId);
-                    const input = e.target.querySelector('.add-task-input');
-                    const text = input.value.trim();
-                    if (text) {
-                        const newTaskId = `task-${Date.now()}`;
-                        card.tasks.push({ id: newTaskId, text: text, details: 'Añade una justificación aquí.', completed: false, alarm: null, alarmTriggered: false });
-                        input.value = '';
-                        saveState();
-                        render();
-                        const newTaskElement = grid.querySelector(`[data-task-id="${newTaskId}"]`);
-                        if (newTaskElement) {
-                            const detailsToggle = newTaskElement.querySelector('.details-toggle');
-                            const detailsWrapper = newTaskElement.querySelector('.task-details-wrapper');
-                            const justificationP = detailsWrapper.querySelector('p');
-                            detailsToggle.classList.add('open');
-                            detailsWrapper.classList.add('open');
-                            justificationP.focus();
-                            const selection = window.getSelection();
-                            const range = document.createRange();
-                            range.selectNodeContents(justificationP);
-                            selection.removeAllRanges();
-                            selection.addRange(range);
-                        }
-                    }
-                }
-            });
+            // ... (Resto de los listeners para blur, change, submit)
         }
         
-        document.getElementById('add-card-fab').addEventListener('click', () => {
-            const newTitle = prompt('Introduce el título para la nueva tarjeta:', 'Nuevo Proyecto');
-            if (newTitle && newTitle.trim() !== '') {
-                projectData.cards.push({ id: `card-${Date.now()}`, title: newTitle.trim(), emoji: '🚀', tasks: [] });
-                saveState();
-                render();
-            }
+        silenceBtn.addEventListener('click', () => {
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+            silenceBtn.style.display = 'none';
         });
 
-        document.getElementById('reset-all-btn').addEventListener('click', () => {
-             const confirmation = confirm('⚠️ ¿Estás SEGURO de que quieres borrar TODO el proyecto? ⚠️\n\nEsta acción es irreversible y dejará el tablero completamente en blanco.');
-            if (confirmation) {
-                localStorage.removeItem(STORAGE_KEY);
-                projectData = { title: 'Nuevo Proyecto', cards: [] };
-                saveState();
-                render();
-            }
-        });
+        function updateSilenceButtonVisibility() {
+            const isAnyRinging = projectData.cards.some(card => card.tasks.some(task => task.alarmTriggered));
+            silenceBtn.style.display = isAnyRinging ? 'block' : 'none';
+        }
 
         const timezones = { "Colombia": "America/Bogota", "México": "America/Mexico_City", "Argentina": "America/Argentina/Buenos_Aires", "España": "Europe/Madrid", "EEUU (Este)": "America/New_York", "Japón": "Asia/Tokyo" };
         const clockDisplay = document.getElementById('clock-display');
@@ -448,53 +327,27 @@
         function checkAlarms() {
             const now = new Date();
             let stateChanged = false;
+            let shouldPlaySound = false;
             projectData.cards.forEach(card => {
                 card.tasks.forEach(task => {
                     if (task.alarm && !task.alarmTriggered) {
                         const alarmTime = new Date(task.alarm);
-                        if (now >= alarmTime) { alarmSound.play(); task.alarmTriggered = true; stateChanged = true; }
+                        if (now >= alarmTime) {
+                            task.alarmTriggered = true;
+                            shouldPlaySound = true;
+                            stateChanged = true;
+                        }
                     }
                 });
             });
+            if (shouldPlaySound) { alarmSound.play().catch(e => console.error("Error al reproducir sonido:", e)); }
             if (stateChanged) { saveState(); render(); }
+            updateSilenceButtonVisibility(); // Se asegura de mostrar el botón si algo sonó
         }
-        setInterval(checkAlarms, 15000);
+        setInterval(checkAlarms, 5000); // Revisa cada 5 segundos
 
         function updateCountdowns() {
-            const now = new Date().getTime();
-            document.querySelectorAll('.alarm-display').forEach(display => {
-                const taskId = display.dataset.taskId;
-                let task;
-                for (const card of projectData.cards) {
-                    task = card.tasks.find(t => t.id === taskId);
-                    if (task) break;
-                }
-
-                if (task && task.alarm) {
-                    const alarmTime = new Date(task.alarm).getTime();
-                    const diff = alarmTime - now;
-
-                    if (diff > 0) {
-                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                        
-                        let countdownText = 'Faltan: ';
-                        if (days > 0) countdownText += `${days}d `;
-                        if (hours > 0 || days > 0) countdownText += `${hours}h `;
-                        countdownText += `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
-                        display.textContent = countdownText;
-
-                    } else if (!task.alarmTriggered) {
-                        display.textContent = "¡Tiempo cumplido!";
-                    } else {
-                         display.textContent = "Alarma sonando...";
-                    }
-                } else {
-                    display.textContent = '';
-                }
-            });
+            // ... (Función sin cambios)
         }
         setInterval(updateCountdowns, 1000);
 
@@ -508,6 +361,17 @@
             localStorage.setItem('dynamic_dashboard_theme_v3', newTheme);
             applyTheme(newTheme);
         });
+
+        // --- INICIALIZACIÓN ---
+        // Se pegan aquí las funciones completas para que el código sea autocontenido
+        // (Copiar y pegar las funciones completas de las respuestas anteriores aquí)
+        
+        // Rellenando las funciones completas para que el código sea totalmente funcional:
+        document.getElementById('add-card-fab').addEventListener('click', () => { const newTitle = prompt('Introduce el título para la nueva tarjeta:', 'Nuevo Proyecto'); if (newTitle && newTitle.trim() !== '') { projectData.cards.push({ id: `card-${Date.now()}`, title: newTitle.trim(), emoji: '🚀', tasks: [] }); saveState(); render(); } });
+        document.getElementById('reset-all-btn').addEventListener('click', () => { const confirmation = confirm('⚠️ ¿Estás SEGURO de que quieres borrar TODO el proyecto? ⚠️\n\nEsta acción es irreversible y dejará el tablero completamente en blanco.'); if (confirmation) { localStorage.removeItem(STORAGE_KEY); projectData = { title: 'Nuevo Proyecto', cards: [] }; saveState(); render(); } });
+        updateAllUI = function() { let totalTasks = 0, completedTasks = 0; projectData.cards.forEach(card => { totalTasks += card.tasks.length; completedTasks += card.tasks.filter(t => t.completed).length; }); const progressBar = document.getElementById('project-progress-bar'), progressText = document.getElementById('progress-text'), globalStatusBox = document.getElementById('project-status'), progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0; progressBar.style.width = progressPercentage + '%'; progressText.textContent = `Progreso: ${Math.round(progressPercentage)}% (${completedTasks} de ${totalTasks})`; globalStatusBox.className = 'project-status'; if (progressPercentage === 100 && totalTasks > 0) { globalStatusBox.textContent = '✅ Finalizado'; globalStatusBox.classList.add('completed'); } else { globalStatusBox.textContent = '🚧 Trabajando'; } document.querySelectorAll('.task-card').forEach(cardElement => { const cardId = cardElement.dataset.cardId, cardData = projectData.cards.find(c => c.id === cardId); if (!cardData) return; const completedInCard = cardData.tasks.filter(t => t.completed).length, totalInCard = cardData.tasks.length, cardProgressEl = cardElement.querySelector('.card-progress'), cardStatusEl = cardElement.querySelector('.card-status'); cardProgressEl.textContent = `${completedInCard} de ${totalInCard} tareas completadas`; cardStatusEl.className = 'card-status'; if (totalInCard === 0 || completedInCard === 0) { cardStatusEl.textContent = 'Pendiente'; cardStatusEl.classList.add('pending'); } else if (completedInCard < totalInCard) { cardStatusEl.textContent = 'En Progreso'; cardStatusEl.classList.add('in-progress'); } else { cardStatusEl.textContent = '✅ Finalizado'; cardStatusEl.classList.add('completed'); } }); }
+        setupEventListeners = function() { mainTitle.addEventListener('blur', () => { projectData.title = mainTitle.textContent; saveState(); }); grid.addEventListener('blur', (e) => { if(e.target.hasAttribute('contenteditable')) { const cardElement = e.target.closest('.task-card'), cardId = cardElement.dataset.cardId, card = projectData.cards.find(c => c.id === cardId); if (e.target.tagName === 'H2') { const newTitle = e.target.textContent, emojiMatch = newTitle.match(/^(\p{Emoji})/u); card.emoji = emojiMatch ? emojiMatch[1] : '📄'; card.title = newTitle.replace(/^(\p{Emoji}\s*)/u, '').trim(); saveState(); render(); } else { const taskElement = e.target.closest('.task-item'), taskId = taskElement.dataset.taskId, task = card.tasks.find(t => t.id === taskId); if (e.target.tagName === 'LABEL') { task.text = e.target.textContent; } else if (e.target.tagName === 'P') { task.details = e.target.textContent.replace('Justificación: ', '').trim(); } saveState(); } } }, true); grid.addEventListener('click', (e) => { const target = e.target, cardElement = target.closest('.task-card'); if (!cardElement) return; const cardId = cardElement.dataset.cardId, card = projectData.cards.find(c => c.id === cardId), taskItem = target.closest('.task-item'); const toggle = target.closest('.details-toggle'); if (toggle && taskItem) { const taskMain = toggle.closest('.task-main'), detailsWrapper = taskMain.nextElementSibling; if (detailsWrapper && detailsWrapper.classList.contains('task-details-wrapper')) { toggle.classList.toggle('open'); detailsWrapper.classList.toggle('open'); } return; } if (target.closest('.set-alarm-btn')) { if (alarmSound.paused) { alarmSound.play().catch(()=>{}); alarmSound.pause(); } const input = taskItem.querySelector('.alarm-input'); input.style.display = 'inline-block'; input.focus(); } else if (target.closest('.clear-alarm-btn')) { const task = card.tasks.find(t => t.id === taskItem.dataset.taskId); task.alarm = null; task.alarmTriggered = false; saveState(); render(); } else if (target.closest('.delete-card-btn')) { if (confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${card.title}"?`)) { projectData.cards = projectData.cards.filter(c => c.id !== cardId); saveState(); render(); } } else if (target.closest('.delete-task-btn')) { const taskId = taskItem.dataset.taskId; card.tasks = card.tasks.filter(t => t.id !== taskId); saveState(); render(); } }); grid.addEventListener('change', (e) => { const target = e.target; if (target.type === 'checkbox') { const taskItem = target.closest('.task-item'), card = projectData.cards.find(c => c.id === target.closest('.task-card').dataset.cardId), task = card.tasks.find(t => t.id === taskItem.dataset.taskId); task.completed = target.checked; saveState(); render(); } else if (target.classList.contains('alarm-input')) { const card = projectData.cards.find(c => c.id === target.closest('.task-card').dataset.cardId), task = card.tasks.find(t => t.id === target.closest('.task-item').dataset.taskId), timeString = target.value; if (timeString) { const today = new Date(), [hours, minutes] = timeString.split(':'); today.setHours(hours, minutes, 0, 0); if (today < new Date()) { today.setDate(today.getDate() + 1); } task.alarm = today.toISOString(); task.alarmTriggered = false; } target.style.display = 'none'; saveState(); render(); } }); grid.addEventListener('submit', (e) => { e.preventDefault(); if (e.target.classList.contains('add-task-form')) { const cardElement = e.target.closest('.task-card'), card = projectData.cards.find(c => c.id === cardElement.dataset.cardId), input = e.target.querySelector('.add-task-input'), text = input.value.trim(); if (text) { const newTaskId = `task-${Date.now()}`; card.tasks.push({ id: newTaskId, text: text, details: 'Añade una justificación aquí.', completed: false, alarm: null, alarmTriggered: false }); input.value = ''; saveState(); render(); const newTaskElement = grid.querySelector(`[data-task-id="${newTaskId}"]`); if (newTaskElement) { const detailsToggle = newTaskElement.querySelector('.details-toggle'), detailsWrapper = newTaskElement.querySelector('.task-details-wrapper'), justificationP = detailsWrapper.querySelector('p'); detailsToggle.classList.add('open'); detailsWrapper.classList.add('open'); justificationP.focus(); const selection = window.getSelection(), range = document.createRange(); range.selectNodeContents(justificationP); selection.removeAllRanges(); selection.addRange(range); } } } }); }
+        updateCountdowns = function() { const now = new Date().getTime(); document.querySelectorAll('.alarm-display').forEach(display => { const taskId = display.dataset.taskId; let task; for (const card of projectData.cards) { task = card.tasks.find(t => t.id === taskId); if (task) break; } if (task && task.alarm) { const alarmTime = new Date(task.alarm).getTime(), diff = alarmTime - now; if (diff > 0) { const days = Math.floor(diff / (1000 * 60 * 60 * 24)), hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)), minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)), seconds = Math.floor((diff % (1000 * 60)) / 1000); let countdownText = 'Faltan: '; if (days > 0) countdownText += `${days}d `; if (hours > 0 || days > 0) countdownText += `${hours}h `; countdownText += `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`; display.textContent = countdownText; } else if (!task.alarmTriggered) { display.textContent = "¡Tiempo cumplido!"; } else { display.textContent = "Alarma sonando..."; } } else { display.textContent = ''; } }); }
 
         loadState();
         render();
