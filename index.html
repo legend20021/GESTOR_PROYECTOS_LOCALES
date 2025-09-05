@@ -103,11 +103,22 @@
         .add-task-btn { padding: 0.5rem 1rem; border: none; background-color: var(--color-primary); color: white; border-radius: 5px; cursor: pointer; font-weight: 600; }
         
         #add-card-fab {
-            position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
-            background-color: var(--color-primary); color: white; border-radius: 50%;
-            border: none; font-size: 2.5rem; line-height: 1; text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer;
+            position: fixed;
+            bottom: 85px; /* <-- AQUÍ ESTÁ EL CAMBIO */
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 2.5rem;
+            line-height: 1;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
             transition: transform 0.2s ease, background-color 0.2s ease;
+            z-index: 100;
         }
         #add-card-fab:hover { transform: scale(1.1); background-color: #63d4b0; }
 
@@ -161,12 +172,12 @@
         const defaultData = {
             title: 'Dashboard de Mejoras: Horno HSG-9',
             cards: [
-                { id: `card-${Date.now()}-1`, title: '🔥 Eficiencia y Calor', emoji: '🔥', tasks: [
+                { id: `card-${Date.now()}-1`, title: 'Eficiencia y Calor', emoji: '🔥', tasks: [
                     { id: `task-${Date.now()}-1`, text: 'Extender y aletear más la chimenea', details: 'El aire de la chimenea sale muy caliente. Incluir 1 sección de 1m de chimenea en el suministro.', completed: false },
                     { id: `task-${Date.now()}-2`, text: 'Ampliar diámetro del ducto de aire superior', details: 'Se busca que todo el aire de proceso entre por esta vía para robar todo el calor y anular los agujeros de "Oscar".', completed: false },
                     { id: `task-${Date.now()}-3`, text: 'Instalar deflector en filtro ciclónico', details: 'Actualmente se miden 250-280°C en el ciclón. El deflector (ya diseñado) tomará más energía de este calor residual.', completed: false }
                 ]},
-                { id: `card-${Date.now()}-2`, title: '⚙️ Combustión y Cenizas', emoji: '⚙️', tasks: [
+                { id: `card-${Date.now()}-2`, title: 'Combustión y Cenizas', emoji: '⚙️', tasks: [
                     { id: `task-${Date.now()}-4`, text: 'Fabricar parrilla en HIERRO FUNDIDO', details: '"Se debe fundir la hornilla" para garantizar máxima durabilidad frente a altas temperaturas y choques térmicos.', completed: true },
                     { id: `task-${Date.now()}-5`, text: 'Compuertas de 1/4" o 3/16" reforzadas', details: 'Deben ser "estrictamente gruesas" para que no se flecten. Reforzar con una lata interna para un mejor sello.', completed: false }
                 ]}
