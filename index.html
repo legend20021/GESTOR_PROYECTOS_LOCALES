@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Tareas Dinámico</title>
+    <title>Gestor de Tareas Profesional</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
         :root {
@@ -31,184 +31,125 @@
             margin-bottom: 2rem; box-shadow: var(--shadow); display: flex; flex-direction: column;
             align-items: center; position: relative; transition: background-color 0.3s ease;
         }
-        header img.logo { max-width: 220px; margin-bottom: 1rem; }
-        header h1 { 
-            font-size: 2.2rem; margin-bottom: 1rem; color: var(--color-text); text-align: center; 
-            transition: color 0.3s ease; cursor: pointer; padding: 5px; border-radius: 5px;
-        }
-        header h1:hover { background-color: rgba(255,255,255,0.1); }
-        [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: var(--color-bg); }
-
-        #project-info { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 0.5rem; flex-wrap: wrap; gap: 10px; }
-        #project-status { padding: 5px 15px; border-radius: 20px; font-weight: 600; background-color: var(--color-status-work); color: white; transition: background-color 0.3s ease; }
-        #project-status.completed { background-color: var(--color-primary); }
-        #progress-text { font-weight: 600; color: var(--color-text-muted); transition: color 0.3s ease; }
-        #project-progress-container { width: 100%; background-color: var(--color-bg); border-radius: 20px; padding: 4px; transition: background-color 0.3s ease; margin-top: 1rem; }
-        #project-progress-bar { height: 20px; width: 0%; background: linear-gradient(90deg, var(--color-secondary), var(--color-primary)); border-radius: 16px; transition: width 0.5s ease-in-out; }
-        
-        #theme-toggle { position: absolute; top: 20px; right: 20px; width: 50px; height: 26px; background-color: var(--color-bg); border-radius: 13px; cursor: pointer; display: flex; align-items: center; padding: 3px; transition: background-color 0.3s ease; }
+        .header-top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 1.5rem; }
+        #reset-all-btn { background: none; border: none; cursor: pointer; padding: 5px; }
+        #reset-all-btn svg { width: 24px; height: 24px; fill: var(--color-text-muted); transition: fill 0.2s ease, transform 0.3s ease; }
+        #reset-all-btn:hover svg { fill: var(--color-secondary); transform: rotate(-90deg); }
+        #clock-widget { display: flex; align-items: center; gap: 10px; background-color: var(--color-bg); padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+        #clock-display { font-size: 1.25rem; font-weight: 600; color: var(--color-text); letter-spacing: 1px; }
+        .timezone-select-wrapper { position: relative; }
+        #timezone-selector { -webkit-appearance: none; appearance: none; background-color: transparent; border: none; color: var(--color-text-muted); padding: 5px 25px 5px 5px; font-size: 0.9rem; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a4b1cd'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 5px center; background-size: 16px; }
+        body.light-mode #timezone-selector { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2365676b'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E"); }
+        #timezone-selector:focus { outline: none; }
+        #theme-toggle { width: 50px; height: 26px; background-color: var(--color-bg); border-radius: 13px; cursor: pointer; display: flex; align-items: center; padding: 3px; transition: background-color 0.3s ease; }
         #theme-toggle .toggle-circle { width: 20px; height: 20px; background-color: white; border-radius: 50%; transition: transform 0.3s ease; display: flex; justify-content: center; align-items: center; font-size: 14px; }
         body.light-mode #theme-toggle .toggle-circle { transform: translateX(24px); }
-        
-        /* --- NUEVO ESTILO PARA EL BOTÓN DE REINICIO --- */
-        #reset-all-btn {
-            position: absolute;
-            top: 23px;
-            left: 20px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-        }
-        #reset-all-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: var(--color-text-muted);
-            transition: fill 0.2s ease, transform 0.3s ease;
-        }
-        #reset-all-btn:hover svg {
-            fill: var(--color-secondary);
-            transform: rotate(-90deg);
-        }
-
+        header img.logo { max-width: 200px; margin-bottom: 1rem; }
+        header h1 { font-size: 2.2rem; color: var(--color-text); text-align: center; transition: color 0.3s ease; cursor: pointer; padding: 5px; border-radius: 5px; }
+        [contenteditable="true"]:focus { outline: 2px solid var(--color-primary); background-color: var(--color-bg); }
+        #project-progress-container { width: 100%; background-color: var(--color-bg); border-radius: 20px; padding: 4px; margin-top: 1.5rem; }
+        #project-progress-bar { height: 20px; width: 0%; background: linear-gradient(90deg, var(--color-secondary), var(--color-primary)); border-radius: 16px; transition: width 0.5s ease-in-out; }
+        #project-info { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 0.5rem; flex-wrap: wrap; gap: 10px; }
+        #project-status { padding: 5px 15px; border-radius: 20px; font-weight: 600; background-color: var(--color-status-work); color: white; transition: background-color 0.3s ease; }
+        #progress-text { font-weight: 600; color: var(--color-text-muted); transition: color 0.3s ease; }
         .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
-        .task-card { 
-            background-color: var(--color-card); border-radius: var(--border-radius); padding: 1.5rem; 
-            box-shadow: var(--shadow); transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            display: flex; flex-direction: column;
-        }
+        .task-card { background-color: var(--color-card); border-radius: var(--border-radius); padding: 1.5rem; box-shadow: var(--shadow); display: flex; flex-direction: column; }
         .task-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
-        .task-card-header h2 { 
-            color: var(--color-primary); margin: 0; border: none; padding: 5px; font-size: 1.5rem;
-            flex-grow: 1; cursor: pointer; border-radius: 5px;
-        }
-        .task-card-header h2:hover { background-color: rgba(255,255,255,0.1); }
+        .task-card-header h2 { color: var(--color-primary); margin: 0; border: none; padding: 5px; font-size: 1.5rem; flex-grow: 1; cursor: pointer; border-radius: 5px; }
         .card-actions { display: flex; align-items: center; gap: 10px; }
         .card-status { font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; color: white; white-space: nowrap; }
         .card-status.pending { background-color: var(--color-status-pending); }
         .card-status.in-progress { background-color: var(--color-status-work); }
         .card-status.completed { background-color: var(--color-primary); }
         .delete-card-btn { background: none; border: none; color: var(--color-secondary); cursor: pointer; font-size: 1.2rem; padding: 5px; line-height: 1; }
-        .delete-card-btn:hover { color: red; }
         .card-progress { font-size: 0.9rem; color: var(--color-text-muted); font-weight: 300; margin-bottom: 1rem; }
-        
         .task-list { list-style: none; flex-grow: 1; }
-        .task-item { padding: 0.5rem; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s ease, border-color 0.3s ease; }
-        .task-item:last-child { border-bottom: none; }
+        .task-item { padding: 0.5rem; border-bottom: 1px solid var(--border-color); }
         .task-main { display: flex; align-items: center; }
-        .task-item input[type="checkbox"] { appearance: none; -webkit-appearance: none; height: 20px; width: 20px; min-width: 20px; background-color: var(--color-bg); border: 2px solid var(--color-text-muted); border-radius: 5px; cursor: pointer; margin-right: 1rem; position: relative; transition: all 0.2s ease; }
+        .task-item input[type="checkbox"] { appearance: none; -webkit-appearance: none; height: 20px; width: 20px; min-width: 20px; background-color: var(--color-bg); border: 2px solid var(--color-text-muted); border-radius: 5px; cursor: pointer; margin-right: 1rem; position: relative; }
         .task-item input[type="checkbox"]:checked { background-color: var(--color-primary); border-color: var(--color-primary); }
-        .task-item input[type="checkbox"]:checked::after { content: '✔'; position: absolute; color: white; font-size: 14px; font-weight: bold; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .task-item label { 
-            font-size: 1rem; color: var(--color-text); transition: color 0.3s ease, text-decoration 0.3s ease; 
-            cursor: pointer; flex-grow: 1; padding: 5px; border-radius: 5px;
-        }
-        .task-item label:hover { background-color: rgba(255,255,255,0.05); }
+        .task-item input[type="checkbox"]:checked::after { content: '✔'; position: absolute; color: white; font-size: 14px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .task-item label { font-size: 1rem; color: var(--color-text); cursor: pointer; flex-grow: 1; padding: 5px; border-radius: 5px; }
         .task-item.completed label { text-decoration: line-through; color: var(--color-text-muted); }
         .task-actions { display: flex; align-items: center; }
-        .details-toggle { font-size: 1.5rem; cursor: pointer; padding: 0 0.5rem; color: var(--color-text-muted); transition: transform 0.3s ease, color 0.2s ease; }
+        .details-toggle, .delete-task-btn, .set-alarm-btn, .clear-alarm-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 5px; }
+        .details-toggle { font-size: 1.5rem; }
         .details-toggle.open { transform: rotate(180deg); }
-        .details-toggle:hover, .delete-task-btn:hover { color: var(--color-text); }
-        .delete-task-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 5px; }
-        
-        .task-details { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease; padding: 0 1rem; margin-left: calc(20px + 1rem); border-left: 2px solid var(--color-primary); }
-        .task-details.open { max-height: 300px; padding: 0.75rem 1rem; }
-        .task-details p { 
-            font-size: 0.9rem; color: var(--color-text-muted); transition: color 0.3s ease; 
-            padding: 5px; border-radius: 5px; cursor: pointer;
-        }
-        .task-details p:hover { background-color: rgba(255,255,255,0.05); }
-
+        .set-alarm-btn:hover, .clear-alarm-btn:hover { color: var(--color-primary); }
+        .task-details-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease; padding: 0 1rem; margin-left: calc(20px + 1rem); border-left: 2px solid var(--color-primary); }
+        .task-details-wrapper.open { max-height: 300px; padding-top: 0.75rem; padding-bottom: 0.5rem; }
+        .task-details p { font-size: 0.9rem; color: var(--color-text-muted); padding: 5px; border-radius: 5px; cursor: pointer; }
+        .alarm-controls { margin-top: 5px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .alarm-display { font-size: 0.8rem; color: var(--color-primary); font-weight: 600; margin-left: 5px; min-width: 150px; }
+        .alarm-input { background-color: var(--color-bg); color: var(--color-text); border: 1px solid var(--border-color); border-radius: 4px; }
+        @keyframes ringing { 0%, 100% { box-shadow: 0 0 10px 3px rgba(233, 69, 96, 0); } 50% { box-shadow: 0 0 10px 3px rgba(233, 69, 96, 0.7); } }
+        .task-item.is-ringing { border-radius: 8px; animation: ringing 1s infinite; cursor: pointer; }
         .add-task-form { display: flex; margin-top: 1rem; gap: 10px; }
         .add-task-input { flex-grow: 1; padding: 0.5rem; border-radius: 5px; border: 1px solid var(--border-color); background-color: var(--color-bg); color: var(--color-text); }
         .add-task-btn { padding: 0.5rem 1rem; border: none; background-color: var(--color-primary); color: white; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        #add-card-fab { position: fixed; bottom: 85px; right: 25px; width: 60px; height: 60px; background-color: var(--color-primary); color: white; border-radius: 50%; border: none; font-size: 2.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.2s ease, background-color 0.2s ease; z-index: 100; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .pulse-animation { animation: pulse 2s infinite; }
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 0.75rem; text-align: center; font-size: 0.9rem; background-color: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); z-index: 10; color: #f0f0f0; }
         
-        #add-card-fab {
-            position: fixed;
-            bottom: 85px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            background-color: var(--color-primary);
-            color: white;
-            border-radius: 50%;
-            border: none;
-            font-size: 2.5rem;
-            line-height: 1;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-            z-index: 100;
+        @media (max-width: 768px) { 
+            body { padding: 1rem; padding-bottom: 80px; }
+            .header-top-bar { flex-direction: column; gap: 15px; }
+            header img.logo { margin-top: 1rem; }
+            header h1 { font-size: 1.8rem; }
         }
-        #add-card-fab:hover { transform: scale(1.1); background-color: #63d4b0; }
-
-        footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 0.75rem; text-align: center; font-size: 0.9rem; background-color: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #f0f0f0; z-index: 10; }
-        footer p { display: flex; justify-content: center; align-items: center; gap: 8px; } footer a { color: #ffffff; font-weight: 600; text-decoration: none; } footer a:hover { text-decoration: underline; }
-        footer svg { fill: #ffffff; width: 24px; height: 24px; }
-        
-        @media (max-width: 900px) { .task-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { body { padding: 1rem; padding-bottom: 80px; } header h1 { font-size: 1.8rem; } #theme-toggle, #reset-all-btn { top: 15px; } #reset-all-btn { left: 15px; } #theme-toggle { right: 15px; } }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
+            <div class="header-top-bar">
+                <button id="reset-all-btn" title="Reiniciar todo el proyecto">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                </button>
+                
+                <div id="clock-widget">
+                    <span id="clock-display">--:-- --</span>
+                    <div class="timezone-select-wrapper">
+                        <select id="timezone-selector" title="Selecciona tu zona horaria"></select>
+                    </div>
+                </div>
+
+                <div id="theme-toggle">
+                    <div class="toggle-circle"></div>
+                </div>
+            </div>
+
             <img src="https://penagos.com/wp-content/uploads/2020/04/logo-2.png" alt="Logo Penagos" class="logo">
+            <h1 id="main-title" contenteditable="true">Dashboard de Mejoras</h1>
             
-            <button id="reset-all-btn" title="Reiniciar todo el proyecto">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-            </button>
-            
-            <h1 id="main-title" contenteditable="true">Dashboard de Mejoras: Horno HSG-9</h1>
-            <div id="theme-toggle"><div class="toggle-circle"></div></div>
-            <div id="project-progress-container"><div id="project-progress-bar"></div></div>
+            <div id="project-progress-container">
+                <div id="project-progress-bar"></div>
+            </div>
             <div id="project-info">
                 <div id="project-status"></div>
                 <div id="progress-text"></div>
             </div>
         </header>
 
-        <main class="task-grid" id="task-grid-container">
-            </main>
+        <main class="task-grid" id="task-grid-container"></main>
     </div>
     
     <button id="add-card-fab" title="Añadir nueva tarjeta">+</button>
 
     <footer>
-        <p>
-            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-            Desarrollado por <a href="https://github.com/legend20021" target="_blank" rel="noopener noreferrer">legend20021</a>
-        </p>
+        <p>Desarrollado con IA y la guía de legend20021</p>
     </footer>
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const STORAGE_KEY = 'dynamic_dashboard_data';
+        const STORAGE_KEY = 'dynamic_dashboard_data_v4';
+        const TIMEZONE_KEY = 'dashboard_timezone';
         const grid = document.getElementById('task-grid-container');
         const mainTitle = document.getElementById('main-title');
-
-        // --- MODELO DE DATOS ---
-        let projectData = {
-            title: 'Dashboard de Mejoras: Horno HSG-9',
-            cards: []
-        };
-
-        const defaultData = {
-            title: 'Dashboard de Mejoras: Horno HSG-9',
-            cards: [
-                { id: `card-${Date.now()}-1`, title: 'Eficiencia y Calor', emoji: '🔥', tasks: [
-                    { id: `task-${Date.now()}-1`, text: 'Extender y aletear más la chimenea', details: 'El aire de la chimenea sale muy caliente. Incluir 1 sección de 1m de chimenea en el suministro.', completed: false },
-                    { id: `task-${Date.now()}-2`, text: 'Ampliar diámetro del ducto de aire superior', details: 'Se busca que todo el aire de proceso entre por esta vía para robar todo el calor y anular los agujeros de "Oscar".', completed: false },
-                    { id: `task-${Date.now()}-3`, text: 'Instalar deflector en filtro ciclónico', details: 'Actualmente se miden 250-280°C en el ciclón. El deflector (ya diseñado) tomará más energía de este calor residual.', completed: false }
-                ]},
-                { id: `card-${Date.now()}-2`, title: 'Combustión y Cenizas', emoji: '⚙️', tasks: [
-                    { id: `task-${Date.now()}-4`, text: 'Fabricar parrilla en HIERRO FUNDIDO', details: '"Se debe fundir la hornilla" para garantizar máxima durabilidad frente a altas temperaturas y choques térmicos.', completed: true },
-                    { id: `task-${Date.now()}-5`, text: 'Compuertas de 1/4" o 3/16" reforzadas', details: 'Deben ser "estrictamente gruesas" para que no se flecten. Reforzar con una lata interna para un mejor sello.', completed: false }
-                ]}
-            ]
-        };
+        const alarmSound = new Audio('data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATEFGAAACAAAFbGF2YzU4LjkxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7UMQAAAoAAAHAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+        let projectData = { title: 'Dashboard de Mejoras', cards: [] };
 
         function saveState() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(projectData));
@@ -216,20 +157,15 @@
 
         function loadState() {
             const savedData = localStorage.getItem(STORAGE_KEY);
-            if (savedData) {
-                projectData = JSON.parse(savedData);
-            } else {
-                projectData = JSON.parse(JSON.stringify(defaultData)); // Deep copy to avoid reference issues
-            }
+            projectData = savedData ? JSON.parse(savedData) : { title: 'Nuevo Proyecto', cards: [] };
         }
 
-        // --- RENDERIZACIÓN DE LA UI ---
         function render() {
             grid.innerHTML = '';
             mainTitle.textContent = projectData.title;
 
             if (projectData.cards.length === 0) {
-                 grid.innerHTML = '<p style="color: var(--color-text-muted); grid-column: 1 / -1; text-align: center;">Aún no hay tarjetas. ¡Añade una para empezar!</p>';
+                 grid.innerHTML = '<p style="color: var(--color-text-muted); grid-column: 1 / -1; text-align: center;">El tablero está en blanco. ¡Añade una tarjeta para empezar!</p>';
             }
 
             projectData.cards.forEach(card => {
@@ -237,8 +173,9 @@
                 cardElement.className = 'task-card';
                 cardElement.dataset.cardId = card.id;
 
-                const tasksHtml = card.tasks.map(task => `
-                    <li class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+                const tasksHtml = card.tasks.map(task => {
+                    return `
+                    <li class="task-item ${task.completed ? 'completed' : ''} ${task.alarmTriggered ? 'is-ringing' : ''}" data-task-id="${task.id}" title="${task.alarmTriggered ? '¡Alarma sonando! Haz clic para descartar.' : ''}">
                         <div class="task-main">
                             <input type="checkbox" ${task.completed ? 'checked' : ''}>
                             <label contenteditable="true">${task.text}</label>
@@ -247,11 +184,17 @@
                                 <button class="delete-task-btn" title="Eliminar tarea">×</button>
                             </div>
                         </div>
-                        <div class="task-details">
+                        <div class="task-details-wrapper">
                             <p contenteditable="true"><strong>Justificación:</strong> ${task.details}</p>
+                            <div class="alarm-controls">
+                                <button class="set-alarm-btn" title="Establecer alarma">🔔</button>
+                                <input type="time" class="alarm-input" style="display:none;">
+                                <span class="alarm-display" data-task-id="${task.id}"></span>
+                                ${task.alarm ? `<button class="clear-alarm-btn" title="Quitar alarma">🚫</button>` : ''}
+                            </div>
                         </div>
                     </li>
-                `).join('');
+                `}).join('');
 
                 cardElement.innerHTML = `
                     <div class="task-card-header">
@@ -273,12 +216,14 @@
             
             updateAllUI();
             setupEventListeners();
+            
+            const fab = document.getElementById('add-card-fab');
+            fab.classList.toggle('pulse-animation', projectData.cards.length === 0);
         }
 
         function updateAllUI() {
             let totalTasks = 0;
             let completedTasks = 0;
-
             projectData.cards.forEach(card => {
                 totalTasks += card.tasks.length;
                 completedTasks += card.tasks.filter(t => t.completed).length;
@@ -292,12 +237,12 @@
             progressBar.style.width = progressPercentage + '%';
             progressText.textContent = `Progreso: ${Math.round(progressPercentage)}% (${completedTasks} de ${totalTasks})`;
 
+            globalStatusBox.className = 'project-status';
             if (progressPercentage === 100 && totalTasks > 0) {
                 globalStatusBox.textContent = '✅ Finalizado';
                 globalStatusBox.classList.add('completed');
             } else {
                 globalStatusBox.textContent = '🚧 Trabajando';
-                globalStatusBox.classList.remove('completed');
             }
 
             document.querySelectorAll('.task-card').forEach(cardElement => {
@@ -312,7 +257,7 @@
                 const cardStatusEl = cardElement.querySelector('.card-status');
                 
                 cardProgressEl.textContent = `${completedInCard} de ${totalInCard} tareas completadas`;
-                cardStatusEl.className = 'card-status'; // Reset classes
+                cardStatusEl.className = 'card-status';
                 if (totalInCard === 0 || completedInCard === 0) {
                     cardStatusEl.textContent = 'Pendiente';
                     cardStatusEl.classList.add('pending');
@@ -326,15 +271,14 @@
             });
         }
         
-        // --- MANEJO DE EVENTOS ---
         function setupEventListeners() {
             mainTitle.addEventListener('blur', () => {
                 projectData.title = mainTitle.textContent;
                 saveState();
             });
 
-            grid.querySelectorAll('[contenteditable="true"]').forEach(element => {
-                element.addEventListener('blur', (e) => {
+            grid.addEventListener('blur', (e) => {
+                if(e.target.hasAttribute('contenteditable')) {
                     const cardElement = e.target.closest('.task-card');
                     const cardId = cardElement.dataset.cardId;
                     const card = projectData.cards.find(c => c.id === cardId);
@@ -354,74 +298,127 @@
                         if (e.target.tagName === 'LABEL') {
                             task.text = e.target.textContent;
                         } else if (e.target.tagName === 'P') {
-                            task.details = e.target.textContent.replace('Justificación: ', '');
+                            task.details = e.target.textContent.replace('Justificación: ', '').trim();
                         }
                         saveState();
                     }
-                });
-            });
+                }
+            }, true);
 
             grid.addEventListener('click', (e) => {
-                const cardElement = e.target.closest('.task-card');
+                const target = e.target;
+                const cardElement = target.closest('.task-card');
                 if (!cardElement) return;
+                
                 const cardId = cardElement.dataset.cardId;
                 const card = projectData.cards.find(c => c.id === cardId);
+                const taskItem = target.closest('.task-item');
 
-                if (e.target.closest('.delete-card-btn')) {
+                if (taskItem && taskItem.classList.contains('is-ringing')) {
+                    if(confirm(`Descartar alarma para la tarea:\n"${taskItem.querySelector('label').textContent}"`)) {
+                        const task = card.tasks.find(t => t.id === taskItem.dataset.taskId);
+                        task.alarmTriggered = false;
+                        task.alarm = null;
+                        alarmSound.pause();
+                        alarmSound.currentTime = 0;
+                        saveState();
+                        render();
+                    }
+                    return;
+                }
+
+                if (target.closest('.delete-card-btn')) {
                     if (confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${card.title}"?`)) {
                         projectData.cards = projectData.cards.filter(c => c.id !== cardId);
                         saveState();
                         render();
                     }
-                }
-                
-                if (e.target.closest('.delete-task-btn')) {
-                    const taskElement = e.target.closest('.task-item');
-                    const taskId = taskElement.dataset.taskId;
+                } else if (target.closest('.delete-task-btn')) {
+                    const taskId = taskItem.dataset.taskId;
                     card.tasks = card.tasks.filter(t => t.id !== taskId);
                     saveState();
                     render();
-                }
-
-                if (e.target.closest('.details-toggle')) {
-                    const toggle = e.target.closest('.details-toggle');
-                    toggle.classList.toggle('open');
-                    toggle.closest('.task-main').nextElementSibling.classList.toggle('open');
+                } else if (target.closest('.details-toggle')) {
+                    target.closest('.details-toggle').classList.toggle('open');
+                    taskItem.querySelector('.task-details-wrapper').classList.toggle('open');
+                } else if (target.closest('.set-alarm-btn')) {
+                    const input = taskItem.querySelector('.alarm-input');
+                    input.style.display = 'inline-block';
+                    input.focus();
+                } else if (target.closest('.clear-alarm-btn')) {
+                    const task = card.tasks.find(t => t.id === taskItem.dataset.taskId);
+                    task.alarm = null;
+                    task.alarmTriggered = false;
+                    saveState();
+                    render();
                 }
             });
 
             grid.addEventListener('change', (e) => {
-                if (e.target.type === 'checkbox') {
-                    const taskElement = e.target.closest('.task-item');
-                    const cardElement = e.target.closest('.task-card');
-                    const cardId = cardElement.dataset.cardId;
-                    const taskId = taskElement.dataset.taskId;
-                    
-                    const card = projectData.cards.find(c => c.id === cardId);
-                    const task = card.tasks.find(t => t.id === taskId);
-                    task.completed = e.target.checked;
-                    taskElement.classList.toggle('completed', e.target.checked);
+                const target = e.target;
+                if (target.type === 'checkbox') {
+                    const taskItem = target.closest('.task-item');
+                    const card = projectData.cards.find(c => c.id === target.closest('.task-card').dataset.cardId);
+                    const task = card.tasks.find(t => t.id === taskItem.dataset.taskId);
+                    task.completed = target.checked;
                     saveState();
-                    updateAllUI();
+                    render();
+                } else if (target.classList.contains('alarm-input')) {
+                    const card = projectData.cards.find(c => c.id === target.closest('.task-card').dataset.cardId);
+                    const task = card.tasks.find(t => t.id === target.closest('.task-item').dataset.taskId);
+                    
+                    const timeString = target.value;
+                    if (timeString) {
+                        const today = new Date();
+                        const [hours, minutes] = timeString.split(':');
+                        today.setHours(hours, minutes, 0, 0);
+
+                        if (today < new Date()) {
+                            today.setDate(today.getDate() + 1);
+                        }
+
+                        task.alarm = today.toISOString();
+                        task.alarmTriggered = false;
+                    }
+                    
+                    target.style.display = 'none';
+                    saveState();
+                    render();
                 }
             });
 
             grid.addEventListener('submit', (e) => {
+                e.preventDefault();
                 if (e.target.classList.contains('add-task-form')) {
-                    e.preventDefault();
                     const cardElement = e.target.closest('.task-card');
-                    const cardId = cardElement.dataset.cardId;
-                    const card = projectData.cards.find(c => c.id === cardId);
+                    const card = projectData.cards.find(c => c.id === cardElement.dataset.cardId);
                     const input = e.target.querySelector('.add-task-input');
                     const text = input.value.trim();
+
                     if (text) {
+                        const newTaskId = `task-${Date.now()}`;
                         card.tasks.push({
-                            id: `task-${Date.now()}`, text: text,
-                            details: 'Añade una justificación aquí.', completed: false
+                            id: newTaskId, text: text, details: 'Añade una justificación aquí.',
+                            completed: false, alarm: null, alarmTriggered: false
                         });
                         input.value = '';
                         saveState();
                         render();
+
+                        const newTaskElement = grid.querySelector(`[data-task-id="${newTaskId}"]`);
+                        if (newTaskElement) {
+                            const detailsToggle = newTaskElement.querySelector('.details-toggle');
+                            const detailsWrapper = newTaskElement.querySelector('.task-details-wrapper');
+                            const justificationP = detailsWrapper.querySelector('p');
+                            detailsToggle.classList.add('open');
+                            detailsWrapper.classList.add('open');
+                            justificationP.focus();
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            range.selectNodeContents(justificationP);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                        }
                     }
                 }
             });
@@ -430,25 +427,105 @@
         document.getElementById('add-card-fab').addEventListener('click', () => {
             const newTitle = prompt('Introduce el título para la nueva tarjeta:', 'Nuevo Proyecto');
             if (newTitle && newTitle.trim() !== '') {
-                projectData.cards.push({
-                    id: `card-${Date.now()}`, title: newTitle.trim(),
-                    emoji: '🚀', tasks: []
-                });
+                projectData.cards.push({ id: `card-${Date.now()}`, title: newTitle.trim(), emoji: '🚀', tasks: [] });
                 saveState();
                 render();
             }
         });
 
-        // --- LÓGICA DEL NUEVO BOTÓN DE REINICIO ---
         document.getElementById('reset-all-btn').addEventListener('click', () => {
-            const confirmation = confirm('⚠️ ¿Estás SEGURO de que quieres borrar TODO el proyecto? ⚠️\n\nEsta acción es irreversible y restaurará el dashboard a su estado inicial.');
+             const confirmation = confirm('⚠️ ¿Estás SEGURO de que quieres borrar TODO el proyecto? ⚠️\n\nEsta acción es irreversible y dejará el tablero completamente en blanco.');
             if (confirmation) {
-                // Borra los datos del almacenamiento local
                 localStorage.removeItem(STORAGE_KEY);
-                // Recarga la página para empezar de cero
-                location.reload();
+                projectData = { title: 'Nuevo Proyecto', cards: [] };
+                saveState();
+                render();
             }
         });
+
+        const timezones = { "Colombia": "America/Bogota", "México": "America/Mexico_City", "Argentina": "America/Argentina/Buenos_Aires", "España": "Europe/Madrid", "EEUU (Este)": "America/New_York", "Japón": "Asia/Tokyo" };
+        const clockDisplay = document.getElementById('clock-display');
+        const timezoneSelector = document.getElementById('timezone-selector');
+        Object.keys(timezones).forEach(name => {
+            const option = document.createElement('option');
+            option.value = timezones[name];
+            option.textContent = name;
+            timezoneSelector.appendChild(option);
+        });
+        let selectedTimezone = localStorage.getItem(TIMEZONE_KEY) || 'America/Bogota';
+        timezoneSelector.value = selectedTimezone;
+
+        function updateClock() {
+            const now = new Date();
+            clockDisplay.textContent = now.toLocaleTimeString('es-CO', { timeZone: selectedTimezone, hour12: true, hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        
+        timezoneSelector.addEventListener('change', () => {
+            selectedTimezone = timezoneSelector.value;
+            localStorage.setItem(TIMEZONE_KEY, selectedTimezone);
+            updateClock();
+        });
+
+        function checkAlarms() {
+            const now = new Date();
+            let stateChanged = false;
+            projectData.cards.forEach(card => {
+                card.tasks.forEach(task => {
+                    if (task.alarm && !task.alarmTriggered) {
+                        const alarmTime = new Date(task.alarm);
+                        if (now >= alarmTime) {
+                            alarmSound.play();
+                            task.alarmTriggered = true;
+                            stateChanged = true;
+                        }
+                    }
+                });
+            });
+            if (stateChanged) {
+                saveState();
+                render();
+            }
+        }
+        setInterval(checkAlarms, 15000);
+
+        function updateCountdowns() {
+            const now = new Date().getTime();
+            document.querySelectorAll('.alarm-display').forEach(display => {
+                const taskId = display.dataset.taskId;
+                let task;
+                for (const card of projectData.cards) {
+                    task = card.tasks.find(t => t.id === taskId);
+                    if (task) break;
+                }
+
+                if (task && task.alarm) {
+                    const alarmTime = new Date(task.alarm).getTime();
+                    const diff = alarmTime - now;
+
+                    if (diff > 0) {
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                        
+                        let countdownText = 'Faltan: ';
+                        if (days > 0) countdownText += `${days}d `;
+                        if (hours > 0 || days > 0) countdownText += `${hours}h `;
+                        countdownText += `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+                        display.textContent = countdownText;
+
+                    } else if (!task.alarmTriggered) {
+                        display.textContent = "¡Tiempo cumplido!";
+                    } else {
+                         display.textContent = "Alarma sonando...";
+                    }
+                } else {
+                    display.textContent = '';
+                }
+            });
+        }
+        setInterval(updateCountdowns, 1000);
 
         const themeToggle = document.getElementById('theme-toggle');
         function applyTheme(theme) {
@@ -457,14 +534,13 @@
         }
         themeToggle.addEventListener('click', () => {
             const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
-            localStorage.setItem('dynamic_dashboard_theme', newTheme);
+            localStorage.setItem('dynamic_dashboard_theme_v3', newTheme);
             applyTheme(newTheme);
         });
 
-        // --- INICIALIZACIÓN ---
         loadState();
         render();
-        applyTheme(localStorage.getItem('dynamic_dashboard_theme') || 'dark');
+        applyTheme(localStorage.getItem('dynamic_dashboard_theme_v3') || 'dark');
     });
     </script>
 </body>
