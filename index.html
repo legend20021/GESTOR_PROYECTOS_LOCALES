@@ -151,10 +151,7 @@
         const alarmSound = new Audio('data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATEFGAAACAAAFbGF2YzU4LjkxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7UMQAAAoAAAHAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
         let projectData = { title: 'Dashboard de Mejoras', cards: [] };
 
-        function saveState() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(projectData));
-        }
-
+        function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(projectData)); }
         function loadState() {
             const savedData = localStorage.getItem(STORAGE_KEY);
             projectData = savedData ? JSON.parse(savedData) : { title: 'Nuevo Proyecto', cards: [] };
@@ -232,30 +229,23 @@
             const progressBar = document.getElementById('project-progress-bar');
             const progressText = document.getElementById('progress-text');
             const globalStatusBox = document.getElementById('project-status');
-
             const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
             progressBar.style.width = progressPercentage + '%';
             progressText.textContent = `Progreso: ${Math.round(progressPercentage)}% (${completedTasks} de ${totalTasks})`;
-
             globalStatusBox.className = 'project-status';
             if (progressPercentage === 100 && totalTasks > 0) {
                 globalStatusBox.textContent = '✅ Finalizado';
                 globalStatusBox.classList.add('completed');
-            } else {
-                globalStatusBox.textContent = '🚧 Trabajando';
-            }
+            } else { globalStatusBox.textContent = '🚧 Trabajando'; }
 
             document.querySelectorAll('.task-card').forEach(cardElement => {
                 const cardId = cardElement.dataset.cardId;
                 const cardData = projectData.cards.find(c => c.id === cardId);
                 if (!cardData) return;
-
                 const completedInCard = cardData.tasks.filter(t => t.completed).length;
                 const totalInCard = cardData.tasks.length;
-                
                 const cardProgressEl = cardElement.querySelector('.card-progress');
                 const cardStatusEl = cardElement.querySelector('.card-status');
-                
                 cardProgressEl.textContent = `${completedInCard} de ${totalInCard} tareas completadas`;
                 cardStatusEl.className = 'card-status';
                 if (totalInCard === 0 || completedInCard === 0) {
@@ -272,17 +262,13 @@
         }
         
         function setupEventListeners() {
-            mainTitle.addEventListener('blur', () => {
-                projectData.title = mainTitle.textContent;
-                saveState();
-            });
+            mainTitle.addEventListener('blur', () => { projectData.title = mainTitle.textContent; saveState(); });
 
             grid.addEventListener('blur', (e) => {
                 if(e.target.hasAttribute('contenteditable')) {
                     const cardElement = e.target.closest('.task-card');
                     const cardId = cardElement.dataset.cardId;
                     const card = projectData.cards.find(c => c.id === cardId);
-
                     if (e.target.tagName === 'H2') {
                         const newTitle = e.target.textContent;
                         const emojiMatch = newTitle.match(/^(\p{Emoji})/u);
@@ -294,12 +280,8 @@
                         const taskElement = e.target.closest('.task-item');
                         const taskId = taskElement.dataset.taskId;
                         const task = card.tasks.find(t => t.id === taskId);
-                        
-                        if (e.target.tagName === 'LABEL') {
-                            task.text = e.target.textContent;
-                        } else if (e.target.tagName === 'P') {
-                            task.details = e.target.textContent.replace('Justificación: ', '').trim();
-                        }
+                        if (e.target.tagName === 'LABEL') { task.text = e.target.textContent; } 
+                        else if (e.target.tagName === 'P') { task.details = e.target.textContent.replace('Justificación: ', '').trim(); }
                         saveState();
                     }
                 }
@@ -319,14 +301,24 @@
                         const task = card.tasks.find(t => t.id === taskItem.dataset.taskId);
                         task.alarmTriggered = false;
                         task.alarm = null;
-                        alarmSound.pause();
-                        alarmSound.currentTime = 0;
+                        alarmSound.pause(); alarmSound.currentTime = 0;
                         saveState();
                         render();
                     }
                     return;
                 }
 
+                const toggle = target.closest('.details-toggle');
+                if (toggle) {
+                    const taskMain = toggle.closest('.task-main');
+                    const detailsWrapper = taskMain.nextElementSibling;
+                    if (detailsWrapper && detailsWrapper.classList.contains('task-details-wrapper')) {
+                        toggle.classList.toggle('open');
+                        detailsWrapper.classList.toggle('open');
+                    }
+                    return;
+                }
+                
                 if (target.closest('.delete-card-btn')) {
                     if (confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${card.title}"?`)) {
                         projectData.cards = projectData.cards.filter(c => c.id !== cardId);
@@ -338,9 +330,6 @@
                     card.tasks = card.tasks.filter(t => t.id !== taskId);
                     saveState();
                     render();
-                } else if (target.closest('.details-toggle')) {
-                    target.closest('.details-toggle').classList.toggle('open');
-                    taskItem.querySelector('.task-details-wrapper').classList.toggle('open');
                 } else if (target.closest('.set-alarm-btn')) {
                     const input = taskItem.querySelector('.alarm-input');
                     input.style.display = 'inline-block';
@@ -366,21 +355,15 @@
                 } else if (target.classList.contains('alarm-input')) {
                     const card = projectData.cards.find(c => c.id === target.closest('.task-card').dataset.cardId);
                     const task = card.tasks.find(t => t.id === target.closest('.task-item').dataset.taskId);
-                    
                     const timeString = target.value;
                     if (timeString) {
                         const today = new Date();
                         const [hours, minutes] = timeString.split(':');
                         today.setHours(hours, minutes, 0, 0);
-
-                        if (today < new Date()) {
-                            today.setDate(today.getDate() + 1);
-                        }
-
+                        if (today < new Date()) { today.setDate(today.getDate() + 1); }
                         task.alarm = today.toISOString();
                         task.alarmTriggered = false;
                     }
-                    
                     target.style.display = 'none';
                     saveState();
                     render();
@@ -394,17 +377,12 @@
                     const card = projectData.cards.find(c => c.id === cardElement.dataset.cardId);
                     const input = e.target.querySelector('.add-task-input');
                     const text = input.value.trim();
-
                     if (text) {
                         const newTaskId = `task-${Date.now()}`;
-                        card.tasks.push({
-                            id: newTaskId, text: text, details: 'Añade una justificación aquí.',
-                            completed: false, alarm: null, alarmTriggered: false
-                        });
+                        card.tasks.push({ id: newTaskId, text: text, details: 'Añade una justificación aquí.', completed: false, alarm: null, alarmTriggered: false });
                         input.value = '';
                         saveState();
                         render();
-
                         const newTaskElement = grid.querySelector(`[data-task-id="${newTaskId}"]`);
                         if (newTaskElement) {
                             const detailsToggle = newTaskElement.querySelector('.details-toggle');
@@ -474,18 +452,11 @@
                 card.tasks.forEach(task => {
                     if (task.alarm && !task.alarmTriggered) {
                         const alarmTime = new Date(task.alarm);
-                        if (now >= alarmTime) {
-                            alarmSound.play();
-                            task.alarmTriggered = true;
-                            stateChanged = true;
-                        }
+                        if (now >= alarmTime) { alarmSound.play(); task.alarmTriggered = true; stateChanged = true; }
                     }
                 });
             });
-            if (stateChanged) {
-                saveState();
-                render();
-            }
+            if (stateChanged) { saveState(); render(); }
         }
         setInterval(checkAlarms, 15000);
 
