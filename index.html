@@ -153,7 +153,6 @@
         const grid = document.getElementById('task-grid-container');
         const mainTitle = document.getElementById('main-title');
         const silenceBtn = document.getElementById('silence-all-btn');
-        // --- CAMBIO: Usando el archivo de audio local ---
         const alarmSound = new Audio('tono.mp3');
         alarmSound.loop = true;
 
@@ -220,7 +219,44 @@
             document.getElementById('add-card-fab').classList.toggle('pulse-animation', projectData.cards.length === 0);
         }
 
-        function updateAllUI() { /* Sin cambios */ }
+        function updateAllUI() {
+            let totalTasks = 0, completedTasks = 0;
+            projectData.cards.forEach(card => {
+                totalTasks += card.tasks.length;
+                completedTasks += card.tasks.filter(t => t.completed).length;
+            });
+            const progressBar = document.getElementById('project-progress-bar'),
+                  progressText = document.getElementById('progress-text'),
+                  globalStatusBox = document.getElementById('project-status'),
+                  progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            progressBar.style.width = progressPercentage + '%';
+            progressText.textContent = `Progreso: ${Math.round(progressPercentage)}% (${completedTasks} de ${totalTasks})`;
+            globalStatusBox.className = 'project-status';
+            if (progressPercentage === 100 && totalTasks > 0) {
+                globalStatusBox.textContent = '✅ Finalizado';
+                globalStatusBox.classList.add('completed');
+            } else { globalStatusBox.textContent = '🚧 Trabajando'; }
+            document.querySelectorAll('.task-card').forEach(cardElement => {
+                const cardId = cardElement.dataset.cardId, cardData = projectData.cards.find(c => c.id === cardId);
+                if (!cardData) return;
+                const completedInCard = cardData.tasks.filter(t => t.completed).length,
+                      totalInCard = cardData.tasks.length,
+                      cardProgressEl = cardElement.querySelector('.card-progress'),
+                      cardStatusEl = cardElement.querySelector('.card-status');
+                cardProgressEl.textContent = `${completedInCard} de ${totalInCard} tareas completadas`;
+                cardStatusEl.className = 'card-status';
+                if (totalInCard === 0 || completedInCard === 0) {
+                    cardStatusEl.textContent = 'Pendiente';
+                    cardStatusEl.classList.add('pending');
+                } else if (completedInCard < totalInCard) {
+                    cardStatusEl.textContent = 'En Progreso';
+                    cardStatusEl.classList.add('in-progress');
+                } else {
+                    cardStatusEl.textContent = '✅ Finalizado';
+                    cardStatusEl.classList.add('completed');
+                }
+            });
+        }
         
         function setupEventListeners() {
             mainTitle.addEventListener('blur', () => { projectData.title = mainTitle.textContent; saveState(); });
@@ -268,7 +304,7 @@
                         task.alarmTriggered = false;
                     }
                     saveState();
-                    setTimeout(render, 10); // Renderizado diferido para evitar el bug
+                    setTimeout(render, 10);
                 } else if (target.closest('.clear-alarm-btn')) {
                     const task = card.tasks.find(t => t.id === taskItem.dataset.taskId);
                     task.alarm = null;
@@ -276,7 +312,11 @@
                     saveState();
                     render();
                 } else if (target.closest('.delete-card-btn')) {
-                    if (confirm(`¿Estás seguro...`)) { /* ... */ }
+                    if (confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${card.title}"?`)) {
+                        projectData.cards = projectData.cards.filter(c => c.id !== cardId);
+                        saveState();
+                        render();
+                    }
                 } else if (target.closest('.delete-task-btn')) {
                     const taskId = taskItem.dataset.taskId;
                     card.tasks = card.tasks.filter(t => t.id !== taskId);
@@ -312,13 +352,61 @@
                 }
             });
 
-            grid.addEventListener('submit', (e) => { /* Sin cambios */ });
+            grid.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (e.target.classList.contains('add-task-form')) {
+                    const card = projectData.cards.find(c => c.id === e.target.closest('.task-card').dataset.cardId);
+                    const input = e.target.querySelector('.add-task-input');
+                    const text = input.value.trim();
+                    if (text) {
+                        const newTaskId = `task-${Date.now()}`;
+                        card.tasks.push({ id: newTaskId, text: text, details: 'Añade una justificación aquí.', completed: false, alarm: null, alarmTriggered: false });
+                        input.value = '';
+                        saveState();
+                        render();
+                        const newTaskElement = grid.querySelector(`[data-task-id="${newTaskId}"]`);
+                        if (newTaskElement) {
+                            const detailsToggle = newTaskElement.querySelector('.details-toggle');
+                            const detailsWrapper = newTaskElement.querySelector('.task-details-wrapper');
+                            const justificationP = detailsWrapper.querySelector('p');
+                            detailsToggle.classList.add('open');
+                            detailsWrapper.classList.add('open');
+                            justificationP.focus();
+                            const selection = window.getSelection(), range = document.createRange();
+                            range.selectNodeContents(justificationP);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                        }
+                    }
+                }
+            });
         }
         
-        document.getElementById('add-card-fab').addEventListener('click', () => { /* Sin cambios */ });
-        document.getElementById('reset-all-btn').addEventListener('click', () => { /* Sin cambios */ });
+        document.getElementById('add-card-fab').addEventListener('click', () => { 
+            const newTitle = prompt('Introduce el título para la nueva tarjeta:', 'Nuevo Proyecto'); 
+            if (newTitle && newTitle.trim() !== '') { 
+                projectData.cards.push({ id: `card-${Date.now()}`, title: newTitle.trim(), emoji: '🚀', tasks: [] }); 
+                saveState(); 
+                render(); 
+            } 
+        });
+
+        document.getElementById('reset-all-btn').addEventListener('click', () => { 
+            const confirmation = confirm('⚠️ ¿Estás SEGURO de que quieres borrar TODO el proyecto? ⚠️\n\nEsta acción es irreversible y dejará el tablero completamente en blanco.'); 
+            if (confirmation) { 
+                localStorage.removeItem(STORAGE_KEY); 
+                projectData = { title: 'Nuevo Proyecto', cards: [] }; 
+                saveState(); 
+                render(); 
+            } 
+        });
+        
         silenceBtn.addEventListener('click', () => { alarmSound.pause(); alarmSound.currentTime = 0; silenceBtn.style.display = 'none'; });
-        function updateSilenceButtonVisibility() { const isAnyRinging = projectData.cards.some(c => c.tasks.some(t => t.alarmTriggered)); silenceBtn.style.display = isAnyRinging ? 'block' : 'none'; }
+
+        function updateSilenceButtonVisibility() {
+            const isAnyRinging = projectData.cards.some(c => c.tasks.some(t => t.alarmTriggered));
+            silenceBtn.style.display = isAnyRinging ? 'block' : 'none';
+        }
 
         const timezones = { "Colombia": "America/Bogota", "México": "America/Mexico_City", "Argentina": "America/Argentina/Buenos_Aires", "España": "Europe/Madrid", "EEUU (Este)": "America/New_York", "Japón": "Asia/Tokyo" };
         const clockDisplay = document.getElementById('clock-display');
@@ -326,6 +414,7 @@
         Object.keys(timezones).forEach(name => { const opt = document.createElement('option'); opt.value = timezones[name]; opt.textContent = name; timezoneSelector.appendChild(opt); });
         let selectedTimezone = localStorage.getItem(TIMEZONE_KEY) || 'America/Bogota';
         timezoneSelector.value = selectedTimezone;
+
         function updateClock() { const now = new Date(); clockDisplay.textContent = now.toLocaleTimeString('es-CO', { timeZone: selectedTimezone, hour12: true, hour: '2-digit', minute: '2-digit' }); }
         setInterval(updateClock, 1000);
         timezoneSelector.addEventListener('change', () => { selectedTimezone = timezoneSelector.value; localStorage.setItem(TIMEZONE_KEY, selectedTimezone); updateClock(); });
@@ -370,11 +459,6 @@
         const themeToggle = document.getElementById('theme-toggle');
         function applyTheme(theme) { document.body.classList.toggle('light-mode', theme === 'light'); themeToggle.querySelector('.toggle-circle').innerHTML = theme === 'light' ? '☀️' : '🌙'; }
         themeToggle.addEventListener('click', () => { const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light'; localStorage.setItem('dynamic_dashboard_theme_v3', newTheme); applyTheme(newTheme); });
-
-        // --- INICIALIZACIÓN ---
-        // (Se pegan aquí las funciones completas para que el código sea autocontenido)
-        updateAllUI = function() { let totalTasks=0,completedTasks=0;projectData.cards.forEach(card=>{totalTasks+=card.tasks.length;completedTasks+=card.tasks.filter(t=>t.completed).length});const progressBar=document.getElementById("project-progress-bar"),progressText=document.getElementById("progress-text"),globalStatusBox=document.getElementById("project-status"),progressPercentage=totalTasks>0?completedTasks/totalTasks*100:0;progressBar.style.width=progressPercentage+"%";progressText.textContent=`Progreso: ${Math.round(progressPercentage)}% (${completedTasks} de ${totalTasks})`;globalStatusBox.className="project-status";if(progressPercentage===100&&totalTasks>0){globalStatusBox.textContent="✅ Finalizado";globalStatusBox.classList.add("completed")}else{globalStatusBox.textContent="🚧 Trabajando"}document.querySelectorAll(".task-card").forEach(cardElement=>{const cardId=cardElement.dataset.cardId,cardData=projectData.cards.find(c=>c.id===cardId);if(!cardData)return;const completedInCard=cardData.tasks.filter(t=>t.completed).length,totalInCard=cardData.tasks.length,cardProgressEl=cardElement.querySelector(".card-progress"),cardStatusEl=cardElement.querySelector(".card-status");cardProgressEl.textContent=`${completedInCard} de ${totalInCard} tareas completadas`;cardStatusEl.className="card-status";if(totalInCard===0||completedInCard===0){cardStatusEl.textContent="Pendiente";cardStatusEl.classList.add("pending")}else if(completedInCard<totalInCard){cardStatusEl.textContent="En Progreso";cardStatusEl.classList.add("in-progress")}else{cardStatusEl.textContent="✅ Finalizado";cardStatusEl.classList.add("completed")}})}
-        grid.addEventListener('submit', (e) => { e.preventDefault(); if (e.target.classList.contains('add-task-form')) { const card = projectData.cards.find(c => c.id === e.target.closest('.task-card').dataset.cardId); const input = e.target.querySelector('.add-task-input'); const text = input.value.trim(); if (text) { const newTaskId = `task-${Date.now()}`; card.tasks.push({ id: newTaskId, text: text, details: 'Añade una justificación aquí.', completed: false, alarm: null, alarmTriggered: false }); input.value = ''; saveState(); render(); const newTaskElement = grid.querySelector(`[data-task-id="${newTaskId}"]`); if (newTaskElement) { const detailsToggle = newTaskElement.querySelector('.details-toggle'); const detailsWrapper = newTaskElement.querySelector('.task-details-wrapper'); const justificationP = detailsWrapper.querySelector('p'); detailsToggle.classList.add('open'); detailsWrapper.classList.add('open'); justificationP.focus(); const selection = window.getSelection(), range = document.createRange(); range.selectNodeContents(justificationP); selection.removeAllRanges(); selection.addRange(range); } } } });
 
         loadState();
         render();
