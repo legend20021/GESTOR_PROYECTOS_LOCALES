@@ -50,6 +50,27 @@
         #theme-toggle .toggle-circle { width: 20px; height: 20px; background-color: white; border-radius: 50%; transition: transform 0.3s ease; display: flex; justify-content: center; align-items: center; font-size: 14px; }
         body.light-mode #theme-toggle .toggle-circle { transform: translateX(24px); }
         
+        /* --- NUEVO ESTILO PARA EL BOTÓN DE REINICIO --- */
+        #reset-all-btn {
+            position: absolute;
+            top: 23px;
+            left: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+        #reset-all-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--color-text-muted);
+            transition: fill 0.2s ease, transform 0.3s ease;
+        }
+        #reset-all-btn:hover svg {
+            fill: var(--color-secondary);
+            transform: rotate(-90deg);
+        }
+
         .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
         .task-card { 
             background-color: var(--color-card); border-radius: var(--border-radius); padding: 1.5rem; 
@@ -104,7 +125,7 @@
         
         #add-card-fab {
             position: fixed;
-            bottom: 85px; /* <-- AQUÍ ESTÁ EL CAMBIO */
+            bottom: 85px;
             right: 25px;
             width: 60px;
             height: 60px;
@@ -127,7 +148,7 @@
         footer svg { fill: #ffffff; width: 24px; height: 24px; }
         
         @media (max-width: 900px) { .task-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { body { padding: 1rem; padding-bottom: 80px; } header h1 { font-size: 1.8rem; } #theme-toggle { top: 15px; right: 15px; } }
+        @media (max-width: 768px) { body { padding: 1rem; padding-bottom: 80px; } header h1 { font-size: 1.8rem; } #theme-toggle, #reset-all-btn { top: 15px; } #reset-all-btn { left: 15px; } #theme-toggle { right: 15px; } }
     </style>
 </head>
 <body>
@@ -135,7 +156,12 @@
     <div class="container">
         <header>
             <img src="https://penagos.com/wp-content/uploads/2020/04/logo-2.png" alt="Logo Penagos" class="logo">
-            <h1 id="main-title" contenteditable="true">MODIFICA EL NOMBRE DEL PROYECTO</h1>
+            
+            <button id="reset-all-btn" title="Reiniciar todo el proyecto">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+            </button>
+            
+            <h1 id="main-title" contenteditable="true">Dashboard de Mejoras: Horno HSG-9</h1>
             <div id="theme-toggle"><div class="toggle-circle"></div></div>
             <div id="project-progress-container"><div id="project-progress-bar"></div></div>
             <div id="project-info">
@@ -302,7 +328,6 @@
         
         // --- MANEJO DE EVENTOS ---
         function setupEventListeners() {
-            // Edición de títulos y texto con contenteditable
             mainTitle.addEventListener('blur', () => {
                 projectData.title = mainTitle.textContent;
                 saveState();
@@ -320,7 +345,7 @@
                         card.emoji = emojiMatch ? emojiMatch[1] : '📄';
                         card.title = newTitle.replace(/^(\p{Emoji}\s*)/u, '').trim();
                         saveState();
-                        render(); // Re-render para asegurar consistencia
+                        render();
                     } else {
                         const taskElement = e.target.closest('.task-item');
                         const taskId = taskElement.dataset.taskId;
@@ -336,14 +361,12 @@
                 });
             });
 
-            // Resto de eventos usando delegación
             grid.addEventListener('click', (e) => {
                 const cardElement = e.target.closest('.task-card');
                 if (!cardElement) return;
                 const cardId = cardElement.dataset.cardId;
                 const card = projectData.cards.find(c => c.id === cardId);
 
-                // Eliminar tarjeta
                 if (e.target.closest('.delete-card-btn')) {
                     if (confirm(`¿Estás seguro de que quieres eliminar la tarjeta "${card.title}"?`)) {
                         projectData.cards = projectData.cards.filter(c => c.id !== cardId);
@@ -352,7 +375,6 @@
                     }
                 }
                 
-                // Eliminar tarea
                 if (e.target.closest('.delete-task-btn')) {
                     const taskElement = e.target.closest('.task-item');
                     const taskId = taskElement.dataset.taskId;
@@ -361,7 +383,6 @@
                     render();
                 }
 
-                // Desplegar detalles
                 if (e.target.closest('.details-toggle')) {
                     const toggle = e.target.closest('.details-toggle');
                     toggle.classList.toggle('open');
@@ -378,10 +399,8 @@
                     
                     const card = projectData.cards.find(c => c.id === cardId);
                     const task = card.tasks.find(t => t.id === taskId);
-
                     task.completed = e.target.checked;
                     taskElement.classList.toggle('completed', e.target.checked);
-                    
                     saveState();
                     updateAllUI();
                 }
@@ -395,13 +414,10 @@
                     const card = projectData.cards.find(c => c.id === cardId);
                     const input = e.target.querySelector('.add-task-input');
                     const text = input.value.trim();
-
                     if (text) {
                         card.tasks.push({
-                            id: `task-${Date.now()}`,
-                            text: text,
-                            details: 'Añade una justificación aquí.',
-                            completed: false
+                            id: `task-${Date.now()}`, text: text,
+                            details: 'Añade una justificación aquí.', completed: false
                         });
                         input.value = '';
                         saveState();
@@ -411,22 +427,29 @@
             });
         }
         
-        // Añadir nueva tarjeta
         document.getElementById('add-card-fab').addEventListener('click', () => {
             const newTitle = prompt('Introduce el título para la nueva tarjeta:', 'Nuevo Proyecto');
             if (newTitle && newTitle.trim() !== '') {
                 projectData.cards.push({
-                    id: `card-${Date.now()}`,
-                    title: newTitle.trim(),
-                    emoji: '🚀',
-                    tasks: []
+                    id: `card-${Date.now()}`, title: newTitle.trim(),
+                    emoji: '🚀', tasks: []
                 });
                 saveState();
                 render();
             }
         });
 
-        // --- GESTIÓN DEL TEMA (MODO CLARO/OSCURO) ---
+        // --- LÓGICA DEL NUEVO BOTÓN DE REINICIO ---
+        document.getElementById('reset-all-btn').addEventListener('click', () => {
+            const confirmation = confirm('⚠️ ¿Estás SEGURO de que quieres borrar TODO el proyecto? ⚠️\n\nEsta acción es irreversible y restaurará el dashboard a su estado inicial.');
+            if (confirmation) {
+                // Borra los datos del almacenamiento local
+                localStorage.removeItem(STORAGE_KEY);
+                // Recarga la página para empezar de cero
+                location.reload();
+            }
+        });
+
         const themeToggle = document.getElementById('theme-toggle');
         function applyTheme(theme) {
             document.body.classList.toggle('light-mode', theme === 'light');
