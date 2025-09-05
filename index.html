@@ -74,15 +74,8 @@
         .task-actions { display: flex; align-items: center; }
         .delete-task-btn, .set-alarm-btn, .clear-alarm-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 5px; }
         .set-alarm-btn:hover, .clear-alarm-btn:hover { color: var(--color-primary); }
-        
-        /* --- CAMBIO: Estilos para la sección de detalles siempre visible --- */
-        .task-details-wrapper {
-            padding: 0.75rem 1rem 0.5rem 1rem;
-            margin-left: calc(20px + 1rem);
-            border-left: 2px solid var(--color-primary);
-        }
+        .task-details-wrapper { padding: 0.75rem 1rem 0.5rem 1rem; margin-left: calc(20px + 1rem); border-left: 2px solid var(--color-primary); }
         .task-details p { font-size: 0.9rem; color: var(--color-text-muted); padding: 5px; border-radius: 5px; cursor: pointer; }
-        
         .alarm-controls { margin-top: 5px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .alarm-display { font-size: 0.8rem; color: var(--color-primary); font-weight: 600; margin-left: 5px; min-width: 150px; }
         .alarm-input { background-color: var(--color-bg); color: var(--color-text); border: 1px solid var(--border-color); border-radius: 4px; }
@@ -152,7 +145,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const STORAGE_KEY = 'dynamic_dashboard_data_v9';
+        const STORAGE_KEY = 'dynamic_dashboard_data_v10';
         const TIMEZONE_KEY = 'dashboard_timezone';
         const grid = document.getElementById('task-grid-container');
         const mainTitle = document.getElementById('main-title');
@@ -168,6 +161,20 @@
             projectData = savedData ? JSON.parse(savedData) : { title: 'Nuevo Proyecto', cards: [] };
         }
 
+        // --- NUEVA FUNCIÓN: Organizar tarjetas ---
+        function isCardCompleted(card) {
+            return card.tasks.length > 0 && card.tasks.every(task => task.completed);
+        }
+
+        function sortCards() {
+            projectData.cards.sort((a, b) => {
+                const aCompleted = isCardCompleted(a);
+                const bCompleted = isCardCompleted(b);
+                if (aCompleted === bCompleted) return 0;
+                return aCompleted ? 1 : -1; // Mueve las completadas (true) al final
+            });
+        }
+
         function render() {
             grid.innerHTML = '';
             mainTitle.textContent = projectData.title;
@@ -178,7 +185,6 @@
                 const cardElement = document.createElement('div');
                 cardElement.className = 'task-card';
                 cardElement.dataset.cardId = card.id;
-                // --- CAMBIO: Se elimina la flecha de despliegue del HTML ---
                 const tasksHtml = card.tasks.map(task => `
                     <li class="task-item ${task.completed ? 'completed' : ''} ${task.alarmTriggered ? 'is-ringing' : ''}" data-task-id="${task.id}">
                         <div class="task-main">
@@ -249,15 +255,15 @@
                       cardStatusEl = cardElement.querySelector('.card-status');
                 cardProgressEl.textContent = `${completedInCard} de ${totalInCard} tareas completadas`;
                 cardStatusEl.className = 'card-status';
-                if (totalInCard === 0 || completedInCard === 0) {
-                    cardStatusEl.textContent = 'Pendiente';
-                    cardStatusEl.classList.add('pending');
-                } else if (completedInCard < totalInCard) {
+                if (isCardCompleted(cardData)) {
+                    cardStatusEl.textContent = '✅ Finalizado';
+                    cardStatusEl.classList.add('completed');
+                } else if (completedInCard > 0) {
                     cardStatusEl.textContent = 'En Progreso';
                     cardStatusEl.classList.add('in-progress');
                 } else {
-                    cardStatusEl.textContent = '✅ Finalizado';
-                    cardStatusEl.classList.add('completed');
+                    cardStatusEl.textContent = 'Pendiente';
+                    cardStatusEl.classList.add('pending');
                 }
             });
         }
@@ -267,9 +273,6 @@
 
             grid.addEventListener('click', (e) => {
                 const target = e.target;
-                
-                // --- CAMBIO: Se elimina por completo la lógica del toggle ---
-
                 const cardElement = target.closest('.task-card');
                 if (!cardElement) return;
                 
@@ -340,6 +343,7 @@
                 if (e.target.type === 'checkbox') {
                     const task = projectData.cards.find(c => c.id === e.target.closest('.task-card').dataset.cardId).tasks.find(t => t.id === e.target.closest('.task-item').dataset.taskId);
                     task.completed = e.target.checked;
+                    sortCards();
                     saveState();
                     render();
                 }
@@ -352,9 +356,8 @@
                     const input = e.target.querySelector('.add-task-input');
                     const text = input.value.trim();
                     if (text) {
-                        const newTaskId = `task-${Date.now()}`;
-                        card.tasks.push({ id: newTaskId, text: text, details: 'Añade una justificación aquí.', completed: false, alarm: null, alarmTriggered: false });
-                        input.value = '';
+                        card.tasks.push({ id: `task-${Date.now()}`, text: text, details: 'Añade una justificación aquí.', completed: false, alarm: null, alarmTriggered: false });
+                        sortCards();
                         saveState();
                         render();
                     }
@@ -366,6 +369,7 @@
             const newTitle = prompt('Introduce el título para la nueva tarjeta:', 'Nuevo Proyecto'); 
             if (newTitle && newTitle.trim() !== '') { 
                 projectData.cards.push({ id: `card-${Date.now()}`, title: newTitle.trim(), emoji: '🚀', tasks: [] }); 
+                sortCards();
                 saveState(); 
                 render(); 
             } 
@@ -382,11 +386,7 @@
         });
         
         silenceBtn.addEventListener('click', () => { alarmSound.pause(); alarmSound.currentTime = 0; silenceBtn.style.display = 'none'; });
-
-        function updateSilenceButtonVisibility() {
-            const isAnyRinging = projectData.cards.some(c => c.tasks.some(t => t.alarmTriggered));
-            silenceBtn.style.display = isAnyRinging ? 'block' : 'none';
-        }
+        function updateSilenceButtonVisibility() { const isAnyRinging = projectData.cards.some(c => c.tasks.some(t => t.alarmTriggered)); silenceBtn.style.display = isAnyRinging ? 'block' : 'none'; }
 
         const timezones = { "Colombia": "America/Bogota", "México": "America/Mexico_City", "Argentina": "America/Argentina/Buenos_Aires", "España": "Europe/Madrid", "EEUU (Este)": "America/New_York", "Japón": "Asia/Tokyo" };
         const clockDisplay = document.getElementById('clock-display');
@@ -441,6 +441,7 @@
         themeToggle.addEventListener('click', () => { const newTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light'; localStorage.setItem('dynamic_dashboard_theme_v3', newTheme); applyTheme(newTheme); });
 
         loadState();
+        sortCards(); // Organiza las tarjetas al cargar la página
         render();
         applyTheme(localStorage.getItem('dynamic_dashboard_theme_v3') || 'dark');
     });
