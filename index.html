@@ -72,13 +72,17 @@
         .task-item label { font-size: 1rem; color: var(--color-text); cursor: pointer; flex-grow: 1; padding: 5px; border-radius: 5px; }
         .task-item.completed label { text-decoration: line-through; color: var(--color-text-muted); }
         .task-actions { display: flex; align-items: center; }
-        .details-toggle, .delete-task-btn, .set-alarm-btn, .clear-alarm-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 5px; }
-        .details-toggle { font-size: 1.5rem; }
-        .details-toggle.open { transform: rotate(180deg); }
+        .delete-task-btn, .set-alarm-btn, .clear-alarm-btn { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0 5px; }
         .set-alarm-btn:hover, .clear-alarm-btn:hover { color: var(--color-primary); }
-        .task-details-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease; padding: 0 1rem; margin-left: calc(20px + 1rem); border-left: 2px solid var(--color-primary); }
-        .task-details-wrapper.open { max-height: 300px; padding-top: 0.75rem; padding-bottom: 0.5rem; }
+        
+        /* --- CAMBIO: Estilos para la sección de detalles siempre visible --- */
+        .task-details-wrapper {
+            padding: 0.75rem 1rem 0.5rem 1rem;
+            margin-left: calc(20px + 1rem);
+            border-left: 2px solid var(--color-primary);
+        }
         .task-details p { font-size: 0.9rem; color: var(--color-text-muted); padding: 5px; border-radius: 5px; cursor: pointer; }
+        
         .alarm-controls { margin-top: 5px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .alarm-display { font-size: 0.8rem; color: var(--color-primary); font-weight: 600; margin-left: 5px; min-width: 150px; }
         .alarm-input { background-color: var(--color-bg); color: var(--color-text); border: 1px solid var(--border-color); border-radius: 4px; }
@@ -148,7 +152,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const STORAGE_KEY = 'dynamic_dashboard_data_v8';
+        const STORAGE_KEY = 'dynamic_dashboard_data_v9';
         const TIMEZONE_KEY = 'dashboard_timezone';
         const grid = document.getElementById('task-grid-container');
         const mainTitle = document.getElementById('main-title');
@@ -174,13 +178,13 @@
                 const cardElement = document.createElement('div');
                 cardElement.className = 'task-card';
                 cardElement.dataset.cardId = card.id;
+                // --- CAMBIO: Se elimina la flecha de despliegue del HTML ---
                 const tasksHtml = card.tasks.map(task => `
                     <li class="task-item ${task.completed ? 'completed' : ''} ${task.alarmTriggered ? 'is-ringing' : ''}" data-task-id="${task.id}">
                         <div class="task-main">
                             <input type="checkbox" ${task.completed ? 'checked' : ''}>
                             <label contenteditable="true">${task.text}</label>
                             <div class="task-actions">
-                                <span class="details-toggle">▾</span>
                                 <button class="delete-task-btn" title="Eliminar tarea">×</button>
                             </div>
                         </div>
@@ -263,19 +267,8 @@
 
             grid.addEventListener('click', (e) => {
                 const target = e.target;
-                const toggle = target.closest('.details-toggle');
-
-                if (toggle) {
-                    const taskMain = toggle.closest('.task-main');
-                    if (taskMain) {
-                        const detailsWrapper = taskMain.nextElementSibling;
-                        if (detailsWrapper && detailsWrapper.classList.contains('task-details-wrapper')) {
-                            toggle.classList.toggle('open');
-                            detailsWrapper.classList.toggle('open');
-                        }
-                    }
-                    return;
-                }
+                
+                // --- CAMBIO: Se elimina por completo la lógica del toggle ---
 
                 const cardElement = target.closest('.task-card');
                 if (!cardElement) return;
@@ -364,19 +357,6 @@
                         input.value = '';
                         saveState();
                         render();
-                        const newTaskElement = grid.querySelector(`[data-task-id="${newTaskId}"]`);
-                        if (newTaskElement) {
-                            const detailsToggle = newTaskElement.querySelector('.details-toggle');
-                            const detailsWrapper = newTaskElement.querySelector('.task-details-wrapper');
-                            const justificationP = detailsWrapper.querySelector('p');
-                            detailsToggle.classList.add('open');
-                            detailsWrapper.classList.add('open');
-                            justificationP.focus();
-                            const selection = window.getSelection(), range = document.createRange();
-                            range.selectNodeContents(justificationP);
-                            selection.removeAllRanges();
-                            selection.addRange(range);
-                        }
                     }
                 }
             });
