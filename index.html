@@ -147,12 +147,15 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const STORAGE_KEY = 'dynamic_dashboard_data_v6';
+        const STORAGE_KEY = 'dynamic_dashboard_data_v7';
         const TIMEZONE_KEY = 'dashboard_timezone';
         const grid = document.getElementById('task-grid-container');
         const mainTitle = document.getElementById('main-title');
         const silenceBtn = document.getElementById('silence-all-btn');
-        const alarmSound = new Audio('data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATEFGAAACAAAFbGF2YzU4LjkxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7UMQAAAoAAAHAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+        // --- CAMBIO: Sonido de alarma desde una librería externa fiable ---
+        const alarmSound = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_72183d12da.mp3');
+        alarmSound.loop = true; // Para que el sonido sea persistente hasta que se silencie
+
         let projectData = { title: 'Dashboard de Mejoras', cards: [] };
 
         function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(projectData)); }
@@ -164,16 +167,13 @@
         function render() {
             grid.innerHTML = '';
             mainTitle.textContent = projectData.title;
-
             if (projectData.cards.length === 0) {
                  grid.innerHTML = '<p style="color: var(--color-text-muted); grid-column: 1 / -1; text-align: center;">El tablero está en blanco. ¡Añade una tarjeta para empezar!</p>';
             }
-
             projectData.cards.forEach(card => {
                 const cardElement = document.createElement('div');
                 cardElement.className = 'task-card';
                 cardElement.dataset.cardId = card.id;
-
                 const tasksHtml = card.tasks.map(task => `
                     <li class="task-item ${task.completed ? 'completed' : ''} ${task.alarmTriggered ? 'is-ringing' : ''}" data-task-id="${task.id}">
                         <div class="task-main">
@@ -195,7 +195,6 @@
                         </div>
                     </li>
                 `).join('');
-
                 cardElement.innerHTML = `
                     <div class="task-card-header">
                         <h2 contenteditable="true">${card.emoji} ${card.title}</h2>
@@ -213,7 +212,6 @@
                 `;
                 grid.appendChild(cardElement);
             });
-            
             updateAllUI();
             updateSilenceButtonVisibility();
             setupEventListeners();
@@ -352,7 +350,8 @@
                     }
                     target.style.display = 'none';
                     saveState();
-                    render();
+                    // --- CORRECCIÓN: Se difiere el renderizado para evitar bloquear clics ---
+                    setTimeout(render, 10);
                 }
             });
 
@@ -422,7 +421,7 @@
                 });
             });
             if (shouldPlaySound && alarmSound.paused) { alarmSound.play().catch(e => console.error("Error al reproducir sonido:", e)); }
-            if (stateChanged) { saveState(); render(); }
+            if (stateChanged) { saveState(); setTimeout(render, 10); }
             updateSilenceButtonVisibility();
         }
         setInterval(checkAlarms, 5000);
